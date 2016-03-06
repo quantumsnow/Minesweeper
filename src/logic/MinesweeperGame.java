@@ -37,7 +37,7 @@ public class MinesweeperGame {
 		}
 	}
 
-	public class Cell {
+	private class Cell {
 		public static final int MARK_NONE = 0, MARK_MINE = 1, MARK_UNKNOWN = 2;
 
 		private boolean mined, opened;
@@ -52,11 +52,11 @@ public class MinesweeperGame {
 			return mined;
 		}
 
-		public boolean isOpened() {
+		boolean isOpened() {
 			return opened;
 		}
 
-		public byte getNumber() {
+		byte getNumber() {
 			return number;
 		}
 
@@ -68,7 +68,7 @@ public class MinesweeperGame {
 			}
 		}
 
-		public int getMark() {
+		int getMark() {
 			return mark;
 		}
 
