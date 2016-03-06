@@ -1,4 +1,4 @@
-package logic;
+package network;
 
 import lib.Client;
 

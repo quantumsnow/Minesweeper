@@ -1,9 +1,10 @@
-package logic;
+package network;
 
 import lib.List;
 import lib.Server;
+import logic.MinesweeperGame.UserInterface;
 
-public class MinesweeperServer extends Server {
+public class MinesweeperServer extends Server implements UserInterface {
 	private class Player {
 		private String nick, ip;
 		private int port;
@@ -64,5 +65,29 @@ public class MinesweeperServer extends Server {
 				return;
 			}
 		}
+	}
+
+	@Override
+	public void mark(int x, int y, int mark) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void open(int x, int y) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void lost(int x, int y) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void won() {
+		// TODO Auto-generated method stub
+		
 	}
 }
