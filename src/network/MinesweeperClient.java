@@ -2,18 +2,21 @@ package network;
 
 import lib.Client;
 import lib.Command;
+import network.MinesweeperServer.ServerCommand;
 
 public class MinesweeperClient extends Client {
-	public static abstract class ClientCommand extends Command {
-		public static final Command OK = new Command(new String[] { "OK" }, false),
-				REGISTER = new Command(new String[] { "R: " }, true),
-				DEREGISTER = new Command(new String[] { "D" }, false),
-				NEW_GAME = new Command(new String[] { "N: (", ", ", ", ", ")" }, false),
-				OPEN = new Command(new String[] { "O: (", ", ", ", ", ")" }, false),
-				LOST = new Command(new String[] { "L: (", ", ", "), (", ")" }, false),
-				WON = new Command(new String[] { "W: (", ", ", "), (", ")" }, false),
-				MARK = new Command(new String[] { "M: (", ", ", ", ", ")" }, false),
-				ERROR = new Command(new String[] { "ERROR" }, false);
+	public static class ClientCommand extends Command {
+		public static final Command OK = new ClientCommand(new String[] { "OK" }, false),
+				REGISTER = new ClientCommand(new String[] { "R: " }, true),
+				DEREGISTER = new ClientCommand(new String[] { "D" }, false),
+				NEW_GAME = new ClientCommand(new String[] { "N: (", ", ", ", ", ")" }, false),
+				OPEN = new ClientCommand(new String[] { "O: (", ", ", ", ", ")" }, false),
+				LOST = new ClientCommand(new String[] { "L: (", ", ", "), (", ")" }, false),
+				WON = new ClientCommand(new String[] { "W: (", ", ", "), (", ")" }, false),
+				MARK = new ClientCommand(new String[] { "M: (", ", ", ", ", ")" }, false),
+				ERROR = new ClientCommand(new String[] { "ERROR" }, false);
+		
+		public static final Command[] COMMANDS = getSet(ClientCommand.class);
 
 		private ClientCommand(String[] blocks, boolean hasTrailingArg) {
 			super(blocks, hasTrailingArg);
@@ -56,20 +59,14 @@ public class MinesweeperClient extends Client {
 
 	@Override
 	public void processMessage(String message) {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	public void open(int x, int y) {
-		// TODO
+		send(ServerCommand.OPEN.generateCommand(new String[] { "" + x, "" + y }));
 	}
 
 	public void mark(int x, int y) {
-		// TODO
-	}
-
-	public Cell[][] getField() {
-		// TODO
-		return null;
+		send(ServerCommand.MARK.generateCommand(new String[] { "" + x, "" + y }));
 	}
 }

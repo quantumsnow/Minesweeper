@@ -1,6 +1,9 @@
 package lib;
 
-public class Command {
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+public abstract class Command {
 	protected String[] blocks;
 	protected boolean hasTrailingArg;
 	
@@ -71,5 +74,26 @@ public class Command {
 			throw new IllegalArgumentException(
 					"Message '" + message + "' does not match syntax '" + toString() + "'");
 		}
+	}
+	
+	protected static Command[] getSet(Class<? extends Command> type) {
+		Field[] fields = type.getFields();
+		List commandList = new List();
+		int setSize = 0;
+		for (Field field : fields) {
+			try {
+				field.get(null);
+				setSize++;
+			} catch (Exception e) {
+			}
+		}
+		
+		Command[] commands = new Command[setSize];
+		commandList.toFirst();
+		for (int i = 0; i < setSize; i++) {
+			commands[i] = (Command) commandList.getObject();
+		}
+		
+		return commands;
 	}
 }

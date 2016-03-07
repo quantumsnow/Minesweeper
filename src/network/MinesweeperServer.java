@@ -4,15 +4,18 @@ import lib.Command;
 import lib.List;
 import lib.Server;
 import logic.MinesweeperGame.UserInterface;
+import network.MinesweeperClient.ClientCommand;
 
 public class MinesweeperServer extends Server implements UserInterface {
-	public static abstract class ServerCommand extends Command {
-		public static final Command REGISTER = new Command(new String[] { "R: " }, true),
-				DEREGISTER = new Command(new String[] { "D" }, false),
-				NEW_GAME_PRESET = new Command(new String[] { "N: " }, true),
-				NEW_GAME_CUSTOM = new Command(new String[] { "N: (", ", ", ", ", ")" }, false),
-				OPEN = new Command(new String[] { "O: (", ", ", ")" }, false),
-				MARK = new Command(new String[] { "M: (", ", ", ", ", ")" }, false);
+	public static class ServerCommand extends Command {
+		public static final Command REGISTER = new ServerCommand(new String[] { "R: " }, true),
+				DEREGISTER = new ServerCommand(new String[] { "D" }, false),
+				NEW_GAME_PRESET = new ServerCommand(new String[] { "N: " }, true),
+				NEW_GAME_CUSTOM = new ServerCommand(new String[] { "N: (", ", ", ", ", ")" }, false),
+				OPEN = new ServerCommand(new String[] { "O: (", ", ", ")" }, false),
+				MARK = new ServerCommand(new String[] { "M: (", ", ", ", ", ")" }, false);
+		
+		public static final Command[] SET = getSet(ClientCommand.class);
 
 		private ServerCommand(String[] blocks, boolean hasTrailingArg) {
 			super(blocks, hasTrailingArg);
