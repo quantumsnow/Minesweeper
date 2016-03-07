@@ -40,7 +40,7 @@ public class MinesweeperGame {
 	private class Cell {
 		static final int MARK_NONE = 0, MARK_MINE = 1, MARK_UNKNOWN = 2;
 
-		private boolean mined, opened;
+		private boolean mined, open;
 		private int mark;
 		private byte number;
 
@@ -52,8 +52,8 @@ public class MinesweeperGame {
 			return mined;
 		}
 
-		boolean isOpened() {
-			return opened;
+		boolean isOpen() {
+			return open;
 		}
 
 		byte getNumber() {
@@ -73,8 +73,8 @@ public class MinesweeperGame {
 		}
 
 		void open() {
-			if (!opened) {
-				this.opened = true;
+			if (!open) {
+				this.open = true;
 			} else {
 				throw new IllegalStateException("Already open");
 			}
