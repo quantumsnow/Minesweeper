@@ -3,6 +3,10 @@ package network;
 import lib.Client;
 
 public class MinesweeperClient extends Client {
+	public class Cell {
+		// TODO
+	}
+	
 	private MinesweeperGUI gui;
 
 	public MinesweeperClient(String ip, int port, MinesweeperGUI gui) {
@@ -22,5 +26,10 @@ public class MinesweeperClient extends Client {
 
 	public void mark(int x, int y) {
 		// TODO
+	}
+	
+	public Cell[][] getField() {
+		// TODO
+		return null;
 	}
 }
