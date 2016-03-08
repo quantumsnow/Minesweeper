@@ -2,30 +2,80 @@ package network;
 
 import lib.Client;
 import lib.Command;
+import lib.List;
+import logic.MinesweeperGame.Coordinates;
 import network.MinesweeperServer.ServerCommand;
 
 public class MinesweeperClient extends Client {
-	public static class ClientCommand extends Command {
-		public static final Command OK = new ClientCommand(new String[] { "OK" }, false),
-				REGISTER = new ClientCommand(new String[] { "R: " }, true),
-				DEREGISTER = new ClientCommand(new String[] { "D" }, false),
-				NEW_GAME = new ClientCommand(new String[] { "N: (", ", ", ", ", ")" }, false),
-				OPEN = new ClientCommand(new String[] { "O: (", ", ", ", ", ")" }, false),
-				LOST = new ClientCommand(new String[] { "L: (", ", ", "), (", ")" }, false),
-				WON = new ClientCommand(new String[] { "W: (", ", ", "), (", ")" }, false),
-				MARK = new ClientCommand(new String[] { "M: (", ", ", ", ", ")" }, false),
-				ERROR = new ClientCommand(new String[] { "ERROR" }, false);
-		
-		public static final Command[] COMMANDS = getSet(ClientCommand.class);
+	public static class ClientCommand extends Command.Client {
+		public static final Command OK = new ClientCommand(new String[] { "OK" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+			}
+		}), REGISTER = new ClientCommand(new String[] { "R: " }, true, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.addPlayer(args[0]);
+			}
+		}), DEREGISTER = new ClientCommand(new String[] { "D: " }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.removePlayer(args[0]);
+			}
+		}), NEW_GAME = new ClientCommand(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.newGame(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+			}
+		}), OPEN = new ClientCommand(new String[] { "O: (", ", ", ", ", ")" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+			}
+		}), LOST = new ClientCommand(new String[] { "L: (", ", ", "), (", ")" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.lost(Integer.parseInt(args[0]), Integer.parseInt(args[1]), parseCellList(args[2]));
+			}
+		}), WON = new ClientCommand(new String[] { "W: (", ", ", "), (", ")" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.won(Integer.parseInt(args[0]), Integer.parseInt(args[1]), parseCellList(args[2]));
+			}
+		}), MARK = new ClientCommand(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.mark(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+			}
+		}), ERROR = new ClientCommand(new String[] { "ERROR" }, false, new Action() {
+			@Override
+			protected void run(lib.Client client, String[] args) {
+				((MinesweeperClient) client).gui.serverError();
+			}
+		});
 
-		private ClientCommand(String[] blocks, boolean hasTrailingArg) {
-			super(blocks, hasTrailingArg);
+		public static final Command[] SET = getSet(ClientCommand.class);
+
+		private ClientCommand(String[] blocks, boolean hasTrailingArg, Command.Client.Action action) {
+			super(blocks, hasTrailingArg, action);
+		}
+
+		private static List parseCellList(String list) {
+			String[] stringCells = list.split("\\), \\(|\\(|\\)");
+			List cells = new List();
+			String[] cellCoordinates;
+			for (String cell : stringCells) {
+				cellCoordinates = cell.split(", ");
+				cells.append(
+						new Coordinates(Integer.parseInt(cellCoordinates[0]), Integer.parseInt(cellCoordinates[1])));
+			}
+			return cells;
 		}
 	}
 
 	public class Cell {
 		public static final byte FLAG_NONE = 0, FLAG_MINE = 1, FLAG_UNKNOWN = 2;
-		
+
 		private boolean open;
 		private byte number;
 		private byte Flag;
@@ -59,7 +109,13 @@ public class MinesweeperClient extends Client {
 
 	@Override
 	public void processMessage(String message) {
-		
+		for (Command command : ClientCommand.SET) {
+			try {
+				((ClientCommand) command).run(this, message);
+				return;
+			} catch (IllegalArgumentException e) {
+			}
+		}
 	}
 
 	public void open(int x, int y) {

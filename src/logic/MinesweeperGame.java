@@ -1,5 +1,6 @@
 package logic;
 
+import lib.List;
 import lib.Queue;
 
 public class MinesweeperGame {
@@ -8,15 +9,28 @@ public class MinesweeperGame {
 		
 		public void open(int x, int y);
 		
-		public void lost(int x, int y);
+		public void lost(int x, int y, List coordinates);
 
-		public void won();
+		public void won(List coordinates);
 	}
 
 	public enum Difficulty {
 		EASY(10, 10, 30), MEDIUM(20, 20, 150), HARD(50, 50, 1500);
 
 		private int width, height, mineCount;
+		
+		public static Difficulty fromByte(byte preset) {
+			switch (preset) {
+			case 0:
+				return EASY;
+			case 1:
+				return MEDIUM;
+			case 2:
+				return HARD;
+			default:
+				throw new IllegalArgumentException("Invalid difficulty constant: " + preset);
+			}
+		}
 
 		private Difficulty(int width, int height, int mineCount) {
 			this.width = width;
@@ -37,8 +51,8 @@ public class MinesweeperGame {
 		}
 	}
 
-	private class Cell {
-		static final int MARK_NONE = 0, MARK_MINE = 1, MARK_UNKNOWN = 2;
+	public class Cell {
+		public static final int MARK_NONE = 0, MARK_MINE = 1, MARK_UNKNOWN = 2;
 
 		private boolean mined, open;
 		private int mark;
@@ -85,7 +99,7 @@ public class MinesweeperGame {
 		}
 	}
 
-	private class Coordinates {
+	public static class Coordinates {
 		private int x, y;
 
 		public Coordinates(int x, int y) {
@@ -101,10 +115,16 @@ public class MinesweeperGame {
 		public int getY() {
 			return y;
 		}
+		
+		@Override
+		public String toString() {
+			return "(" + x + ", " + y + ")";
+		}
 	}
 
 	private int width, height, mineCount;
 	private Cell[][] field;
+	List mines;
 
 	private UserInterface ui;
 
@@ -139,7 +159,7 @@ public class MinesweeperGame {
 		}
 
 		// fill field
-		Queue mines = new Queue();
+		mines = new List();
 		{ // generate mines
 			int x, y;
 			for (int i = 0; i <= mineCount; i++) {
@@ -150,7 +170,7 @@ public class MinesweeperGame {
 				} while (field[x][y] != null); // field must not have a mine
 												// already
 
-				mines.enqueue(new Coordinates(x, y));
+				mines.append(new Coordinates(x, y));
 				field[x][y] = new Cell(true);
 			}
 		}
@@ -167,8 +187,9 @@ public class MinesweeperGame {
 		{ // generate numbers
 			Queue neighbors;
 			Coordinates currentNeighbor;
-			while (!mines.isEmpty()) {
-				neighbors = getNeighbors((Coordinates) mines.front());
+			mines.toFirst();
+			while (mines.hasAccess()) {
+				neighbors = getNeighbors((Coordinates) mines.getObject());
 				while (!neighbors.isEmpty()) {
 					currentNeighbor = (Coordinates) neighbors.front();
 					try {
@@ -177,7 +198,7 @@ public class MinesweeperGame {
 					}
 					neighbors.dequeue();
 				}
-				mines.dequeue();
+				mines.next();
 			}
 		}
 	}
@@ -234,7 +255,7 @@ public class MinesweeperGame {
 					}
 				}
 			} else {
-				ui.lost(coordinates.getX(), coordinates.getY());
+				ui.lost(coordinates.getX(), coordinates.getY(), mines);
 			}
 		} catch (IllegalStateException e) {
 		}

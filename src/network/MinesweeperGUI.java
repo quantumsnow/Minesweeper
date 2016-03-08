@@ -4,6 +4,9 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
+import lib.List;
+import network.MinesweeperClient.Cell;
+
 public class MinesweeperGUI {
 
 	private JFrame frame;
@@ -44,15 +47,31 @@ public class MinesweeperGUI {
 		// TODO
 	}
 
-	public void mark(int x, int y) {
+	public void mark(int x, int y, int mark) {
 		// TODO
 	}
 	
-	public void won(int x, int y) {
+	public void won(int x, int y, List mines) {
 		
 	}
 	
-	public void lost(int x, int y) {
+	public void lost(int x, int y, List mines) {
+		
+	}
+	
+	public void addPlayer(String nick) {
+		
+	}
+	
+	public void removePlayer(String nick) {
+		
+	}
+	
+	public void newGame(int width, int height, int mineCount) {
+		
+	}
+	
+	public void serverError() {
 		
 	}
 }
