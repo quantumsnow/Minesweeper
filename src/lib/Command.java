@@ -51,13 +51,14 @@ public abstract class Command {
 		public static class Parameter<E> extends Block {
 			private Class<E> type;
 			
-			public Parameter() {
-				type = E.;
+			public Parameter(Class<E> type) {
+				this.type = type;
 			}
 			
 			@Override
 			public String getRegex() {
-				
+				// TODO
+				return null;
 			}
 		}
 		
