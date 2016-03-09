@@ -5,7 +5,6 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 
 import lib.List;
-import network.MinesweeperClient.Cell;
 
 public class MinesweeperGUI {
 
@@ -43,7 +42,7 @@ public class MinesweeperGUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public void open(int x, int y) {
+	public void open(int x, int y, int number) {
 		// TODO
 	}
 

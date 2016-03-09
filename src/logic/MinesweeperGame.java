@@ -52,13 +52,13 @@ public class MinesweeperGame {
 	}
 
 	public class Cell {
-		public static final int MARK_NONE = 0, MARK_MINE = 1, MARK_UNKNOWN = 2;
+		public static final int MARK_NONE = -1, MARK_MINE = -2, MARK_UNKNOWN = -3;
 
 		private boolean mined, open;
 		private int mark;
 		private byte number;
 
-		Cell(boolean mined) {
+		private Cell(boolean mined) {
 			this.mined = mined;
 		}
 
@@ -66,15 +66,15 @@ public class MinesweeperGame {
 			return mined;
 		}
 
-		boolean isOpen() {
+		public boolean isOpen() {
 			return open;
 		}
 
-		byte getNumber() {
+		public byte getNumber() {
 			return number;
 		}
 
-		void increaseNumber() {
+		private void increaseNumber() {
 			if (!mined) {
 				number++;
 			} else {
@@ -82,11 +82,11 @@ public class MinesweeperGame {
 			}
 		}
 
-		int getMark() {
+		public int getMark() {
 			return mark;
 		}
 
-		void open() {
+		private void open() {
 			if (!open) {
 				this.open = true;
 			} else {
@@ -94,7 +94,7 @@ public class MinesweeperGame {
 			}
 		}
 
-		void mark(int mark) {
+		private void mark(int mark) {
 			this.mark = mark;
 		}
 	}
