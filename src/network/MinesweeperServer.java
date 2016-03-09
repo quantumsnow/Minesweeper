@@ -6,9 +6,8 @@ import logic.MinesweeperGame;
 import logic.MinesweeperGame.Cell;
 import logic.MinesweeperGame.Coordinates;
 import logic.MinesweeperGame.Difficulty;
-import logic.MinesweeperGame.UserInterface;
 
-public class MinesweeperServer extends Server implements UserInterface {
+public class MinesweeperServer extends Server implements MinesweeperGame.UserInterface {
 	public static class Command extends lib.Command.Server {
 		public static final lib.Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
@@ -170,12 +169,12 @@ public class MinesweeperServer extends Server implements UserInterface {
 
 	@Override
 	public void mark(int x, int y, int mark) {
-		sendToAll(MinesweeperClient.Command.MARK.generateCommand(new Object[] { x, y, mark }));
+		sendToAll(MinesweeperClient.Command.MARK.generateCommand(new Integer[] { x, y, mark }));
 	}
 
 	@Override
 	public void open(int x, int y) {
-		sendToAll(MinesweeperClient.Command.OPEN.generateCommand(new Object[] { x, y }));
+		sendToAll(MinesweeperClient.Command.OPEN.generateCommand(new Integer[] { x, y }));
 	}
 
 	@Override
@@ -187,7 +186,7 @@ public class MinesweeperServer extends Server implements UserInterface {
 	@Override
 	public void won(List coordinates) {
 		sendToAll(MinesweeperClient.Command.LOST
-				.generateCommand(new Object[] { buildCoordinateList(coordinates) }));
+				.generateCommand(new String[] { buildCoordinateList(coordinates) }));
 	}
 
 	private static String buildCoordinateList(List coordinates) {

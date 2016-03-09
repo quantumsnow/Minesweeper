@@ -9,9 +9,9 @@ public class MinesweeperGame {
 		
 		public void open(int x, int y);
 		
-		public void lost(int x, int y, List coordinates);
+		public void lost(int x, int y, List mineCoordinates);
 
-		public void won(List coordinates);
+		public void won(List mineCoordinates);
 	}
 
 	public enum Difficulty {
@@ -124,7 +124,8 @@ public class MinesweeperGame {
 
 	private int width, height, mineCount;
 	private Cell[][] field;
-	List mines;
+	private List mines;
+	private boolean ended;
 
 	private UserInterface ui;
 
@@ -234,6 +235,17 @@ public class MinesweeperGame {
 	
 	public void open(int x, int y) {
 		open(new Coordinates(x, y));
+		
+		// check if won
+		for (Cell[] column : field) {
+			for (Cell cell : column) {
+				if (!cell.isMined() && !cell.isOpen()) {
+					return;
+				}
+			}
+		}
+		ended = true;
+		ui.won(mines);
 	}
 
 	private void open(Coordinates coordinates) {
@@ -255,6 +267,7 @@ public class MinesweeperGame {
 					}
 				}
 			} else {
+				ended = true;
 				ui.lost(coordinates.getX(), coordinates.getY(), mines);
 			}
 		} catch (IllegalStateException e) {
