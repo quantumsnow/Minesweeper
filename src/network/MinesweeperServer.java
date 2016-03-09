@@ -5,6 +5,7 @@ import lib.List;
 import lib.Server;
 import logic.MinesweeperGame;
 import logic.MinesweeperGame.Coordinates;
+import logic.MinesweeperGame.Difficulty;
 import logic.MinesweeperGame.UserInterface;
 import network.MinesweeperClient.ClientCommand;
 
@@ -34,17 +35,18 @@ public class MinesweeperServer extends Server implements UserInterface {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
-				msServer.game = new MinesweeperGame(MinesweeperGame.Difficulty.fromByte(Byte.parseByte(args[0])),
+				Difficulty difficulty = MinesweeperGame.Difficulty.fromByte(Byte.parseByte(args[0]));
+				msServer.game = new MinesweeperGame(difficulty,
 						msServer);
-				// TODO notify players
+				msServer.notifyPlayersNewGame(difficulty.getWidth(), difficulty.getHeight(), difficulty.getMineCount());
 			}
 		}), NEW_GAME_CUSTOM = new ServerCommand(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
-				msServer.game = new MinesweeperGame(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-						Integer.parseInt(args[2]), msServer);
-				// TODO notify players
+				int width = Integer.parseInt(args[0]), height = Integer.parseInt(args[1]), mineCount = Integer.parseInt(args[2]);
+				msServer.game = new MinesweeperGame(width, height, mineCount, msServer);
+				msServer.notifyPlayersNewGame(width, height, mineCount);
 			}
 		}), OPEN = new ServerCommand(new String[] { "O: (", ", ", ")" }, false, new Action() {
 			@Override
@@ -173,5 +175,9 @@ public class MinesweeperServer extends Server implements UserInterface {
 				return;
 			}
 		}
+	}
+	
+	private void notifyPlayersNewGame(int width, int height, int mineCount) {
+		sendToAll(MinesweeperClient.ClientCommand.NEW_GAME.generateCommand(new Integer[] { width, height, mineCount }));
 	}
 }
