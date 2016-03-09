@@ -1,6 +1,5 @@
 package network;
 
-import lib.Command;
 import lib.List;
 import lib.Server;
 import logic.MinesweeperGame;
@@ -8,18 +7,17 @@ import logic.MinesweeperGame.Cell;
 import logic.MinesweeperGame.Coordinates;
 import logic.MinesweeperGame.Difficulty;
 import logic.MinesweeperGame.UserInterface;
-import network.MinesweeperClient.ClientCommand;
 
 public class MinesweeperServer extends Server implements UserInterface {
-	public static class ServerCommand extends Command.Server {
-		public static final Command REGISTER = new ServerCommand(new String[] { "R: " }, true, new Action() {
+	public static class Command extends lib.Command.Server {
+		public static final lib.Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
 				try {
 					msServer.goToPlayer(ip, port);
 					((Player) msServer.players.getObject()).register(args[0]);
-					msServer.sendToAll(MinesweeperClient.ClientCommand.REGISTER.generateCommand(args));
+					msServer.sendToAll(MinesweeperClient.Command.REGISTER.generateCommand(args));
 
 					// send players
 					String players = "";
@@ -32,7 +30,7 @@ public class MinesweeperServer extends Server implements UserInterface {
 						}
 					}
 					msServer.send(ip, port,
-							MinesweeperClient.ClientCommand.PLAYERS.generateCommand(new String[] { players }));
+							MinesweeperClient.Command.PLAYERS.generateCommand(new String[] { players }));
 					
 					// send field
 					Cell[][] field = msServer.game.getField();
@@ -49,9 +47,9 @@ public class MinesweeperServer extends Server implements UserInterface {
 						fieldString += "]";
 					}
 					fieldString += ")";
-					msServer.send(ip, port, MinesweeperClient.ClientCommand.FIELD.generateCommand(new String[] { fieldString }));
+					msServer.send(ip, port, MinesweeperClient.Command.FIELD.generateCommand(new String[] { fieldString }));
 				} catch (IllegalStateException e) {
-					msServer.send(ip, port, MinesweeperClient.ClientCommand.ERROR.generateCommand(null));
+					msServer.send(ip, port, MinesweeperClient.Command.ERROR.generateCommand(null));
 				}
 			}
 			
@@ -62,16 +60,16 @@ public class MinesweeperServer extends Server implements UserInterface {
 					return cell.getMark();
 				}
 			}
-		}), DEREGISTER = new ServerCommand(new String[] { "D" }, false, new Action() {
+		}), DEREGISTER = new Command(new String[] { "D" }, false, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
 				msServer.goToPlayer(ip, port);
-				msServer.sendToAll(MinesweeperClient.ClientCommand.DEREGISTER
+				msServer.sendToAll(MinesweeperClient.Command.DEREGISTER
 						.generateCommand(new String[] { ((Player) msServer.players.getObject()).getNick() }));
 				msServer.players.remove();
 			}
-		}), NEW_GAME_PRESET = new ServerCommand(new String[] { "N: " }, true, new Action() {
+		}), NEW_GAME_PRESET = new Command(new String[] { "N: " }, true, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
@@ -79,7 +77,7 @@ public class MinesweeperServer extends Server implements UserInterface {
 				msServer.game = new MinesweeperGame(difficulty, msServer);
 				msServer.notifyPlayersNewGame(difficulty.getWidth(), difficulty.getHeight(), difficulty.getMineCount());
 			}
-		}), NEW_GAME_CUSTOM = new ServerCommand(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
+		}), NEW_GAME_CUSTOM = new Command(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
@@ -88,13 +86,13 @@ public class MinesweeperServer extends Server implements UserInterface {
 				msServer.game = new MinesweeperGame(width, height, mineCount, msServer);
 				msServer.notifyPlayersNewGame(width, height, mineCount);
 			}
-		}), OPEN = new ServerCommand(new String[] { "O: (", ", ", ")" }, false, new Action() {
+		}), OPEN = new Command(new String[] { "O: (", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
 				msServer.game.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
 			}
-		}), MARK = new ServerCommand(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
+		}), MARK = new Command(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
@@ -102,9 +100,9 @@ public class MinesweeperServer extends Server implements UserInterface {
 			}
 		});
 
-		public static final Command[] SET = getSet(ClientCommand.class);
+		public static final lib.Command[] SET = getSet(Command.class);
 
-		private ServerCommand(String[] blocks, boolean hasTrailingArg, Command.Server.Action action) {
+		private Command(String[] blocks, boolean hasTrailingArg, lib.Command.Server.Action action) {
 			super(blocks, hasTrailingArg, action);
 		}
 	}
@@ -155,9 +153,9 @@ public class MinesweeperServer extends Server implements UserInterface {
 
 	@Override
 	public void processMessage(String ip, int port, String message) {
-		for (Command command : ServerCommand.SET) {
+		for (lib.Command command : Command.SET) {
 			try {
-				((ServerCommand) command).run(this, ip, port, message);
+				((Command) command).run(this, ip, port, message);
 				return;
 			} catch (IllegalArgumentException e) {
 			}
@@ -172,23 +170,23 @@ public class MinesweeperServer extends Server implements UserInterface {
 
 	@Override
 	public void mark(int x, int y, int mark) {
-		sendToAll(MinesweeperClient.ClientCommand.MARK.generateCommand(new Object[] { x, y, mark }));
+		sendToAll(MinesweeperClient.Command.MARK.generateCommand(new Object[] { x, y, mark }));
 	}
 
 	@Override
 	public void open(int x, int y) {
-		sendToAll(MinesweeperClient.ClientCommand.OPEN.generateCommand(new Object[] { x, y }));
+		sendToAll(MinesweeperClient.Command.OPEN.generateCommand(new Object[] { x, y }));
 	}
 
 	@Override
 	public void lost(int x, int y, List coordinates) {
-		sendToAll(MinesweeperClient.ClientCommand.LOST
+		sendToAll(MinesweeperClient.Command.LOST
 				.generateCommand(new Object[] { x, y, buildCoordinateList(coordinates) }));
 	}
 
 	@Override
 	public void won(List coordinates) {
-		sendToAll(MinesweeperClient.ClientCommand.LOST
+		sendToAll(MinesweeperClient.Command.LOST
 				.generateCommand(new Object[] { buildCoordinateList(coordinates) }));
 	}
 
@@ -218,6 +216,6 @@ public class MinesweeperServer extends Server implements UserInterface {
 	}
 
 	private void notifyPlayersNewGame(int width, int height, int mineCount) {
-		sendToAll(MinesweeperClient.ClientCommand.NEW_GAME.generateCommand(new Integer[] { width, height, mineCount }));
+		sendToAll(MinesweeperClient.Command.NEW_GAME.generateCommand(new Integer[] { width, height, mineCount }));
 	}
 }

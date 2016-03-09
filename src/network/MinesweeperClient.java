@@ -1,23 +1,21 @@
 package network;
 
 import lib.Client;
-import lib.Command;
 import lib.List;
 import logic.MinesweeperGame.Coordinates;
-import network.MinesweeperServer.ServerCommand;
 
 public class MinesweeperClient extends Client {
-	public static class ClientCommand extends Command.Client {
-		public static final Command OK = new ClientCommand(new String[] { "OK" }, false, new Action() {
+	public static class Command extends lib.Command.Client {
+		public static final lib.Command OK = new Command(new String[] { "OK" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 			}
-		}), REGISTER = new ClientCommand(new String[] { "R: " }, true, new Action() {
+		}), REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.addPlayer(args[0]);
 			}
-		}), PLAYERS = new ClientCommand(new String[] { "P: " }, true, new Action() {
+		}), PLAYERS = new Command(new String[] { "P: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				String[] players = args[0].split(", ");
@@ -25,7 +23,7 @@ public class MinesweeperClient extends Client {
 					((MinesweeperClient) client).gui.addPlayer(player);
 				}
 			}
-		}), FIELD = new ClientCommand(new String[] { "F: (" + ")" }, false, new Action() {
+		}), FIELD = new Command(new String[] { "F: (" + ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				String[] rows = args[0].split("[|], [|]"), fields;
@@ -42,50 +40,50 @@ public class MinesweeperClient extends Client {
 					}
 				}
 			}
-		}), DEREGISTER = new ClientCommand(new String[] { "D: " }, false, new Action() {
+		}), DEREGISTER = new Command(new String[] { "D: " }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.removePlayer(args[0]);
 			}
-		}), NEW_GAME = new ClientCommand(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
+		}), NEW_GAME = new Command(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.newGame(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						Integer.parseInt(args[2]));
 			}
-		}), OPEN = new ClientCommand(new String[] { "O: (", ", ", ", ", ")" }, false, new Action() {
+		}), OPEN = new Command(new String[] { "O: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 			}
-		}), LOST = new ClientCommand(new String[] { "L: (", ", ", "), (", ")" }, false, new Action() {
+		}), LOST = new Command(new String[] { "L: (", ", ", "), (", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.lost(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						parseCellList(args[2]));
 			}
-		}), WON = new ClientCommand(new String[] { "W: (", ", ", "), (", ")" }, false, new Action() {
+		}), WON = new Command(new String[] { "W: (", ", ", "), (", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.won(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						parseCellList(args[2]));
 			}
-		}), MARK = new ClientCommand(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
+		}), MARK = new Command(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.mark(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						Integer.parseInt(args[2]));
 			}
-		}), ERROR = new ClientCommand(new String[] { "ERROR" }, false, new Action() {
+		}), ERROR = new Command(new String[] { "ERROR" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.serverError();
 			}
 		});
 
-		public static final Command[] SET = getSet(ClientCommand.class);
+		public static final lib.Command[] SET = getSet(Command.class);
 
-		private ClientCommand(String[] blocks, boolean hasTrailingArg, Command.Client.Action action) {
+		private Command(String[] blocks, boolean hasTrailingArg, lib.Command.Client.Action action) {
 			super(blocks, hasTrailingArg, action);
 		}
 
@@ -102,33 +100,6 @@ public class MinesweeperClient extends Client {
 		}
 	}
 
-//	public class Cell {
-//		public static final byte FLAG_NONE = 0, FLAG_MINE = 1, FLAG_UNKNOWN = 2;
-//
-//		private boolean open;
-//		private byte number;
-//		private byte Flag;
-//
-//		public Cell(boolean open, byte number, byte flag) {
-//			super();
-//			this.open = open;
-//			this.number = number;
-//			Flag = flag;
-//		}
-//
-//		public boolean isOpen() {
-//			return open;
-//		}
-//
-//		public byte getNumber() {
-//			return number;
-//		}
-//
-//		public byte getFlag() {
-//			return Flag;
-//		}
-//	}
-
 	private MinesweeperGUI gui;
 
 	public MinesweeperClient(String ip, int port, MinesweeperGUI gui) {
@@ -138,9 +109,9 @@ public class MinesweeperClient extends Client {
 
 	@Override
 	public void processMessage(String message) {
-		for (Command command : ClientCommand.SET) {
+		for (lib.Command command : Command.SET) {
 			try {
-				((ClientCommand) command).run(this, message);
+				((Command) command).run(this, message);
 				return;
 			} catch (IllegalArgumentException e) {
 			}
@@ -148,10 +119,10 @@ public class MinesweeperClient extends Client {
 	}
 
 	public void open(int x, int y) {
-		send(ServerCommand.OPEN.generateCommand(new String[] { "" + x, "" + y }));
+		send(MinesweeperServer.Command.OPEN.generateCommand(new String[] { "" + x, "" + y }));
 	}
 
 	public void mark(int x, int y) {
-		send(ServerCommand.MARK.generateCommand(new String[] { "" + x, "" + y }));
+		send(MinesweeperServer.Command.MARK.generateCommand(new String[] { "" + x, "" + y }));
 	}
 }

@@ -31,7 +31,37 @@ public abstract class Command {
 		}
 	}
 	
-	protected abstract static class Action {
+	protected static abstract class Action {
+	}
+	
+	public static abstract class Block {
+		public static class Constant extends Block {
+			private String content;
+			
+			public Constant(String content) {
+				this.content = content;
+			}
+			
+			@Override
+			public String getRegex() {
+				return content;
+			}
+		}
+		
+		public static class Parameter<E> extends Block {
+			private Class<E> type;
+			
+			public Parameter() {
+				type = E.;
+			}
+			
+			@Override
+			public String getRegex() {
+				
+			}
+		}
+		
+		public abstract String getRegex();
 	}
 
 	protected String[] blocks;
@@ -75,8 +105,8 @@ public abstract class Command {
 	}
 
 	private String generateRegex() {
-		String regex = "";
-		for (int i = 0; i < blocks.length; i++) {
+		String regex = blocks[0];
+		for (int i = 1; i < blocks.length; i++) {
 			regex += ".+" + blocks[i];
 		}
 		return (hasTrailingArg ? regex + ".+" : regex);
