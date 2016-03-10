@@ -1,15 +1,19 @@
-package network;
-
+package network; 
+import java.awt.*;
+import javax.swing.*; 
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
-
-import lib.List;
+import javax.swing.JPanel;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 
 public class MinesweeperGUI {
 
 	private JFrame frame;
-
+	private MinesweeperClient client;
+	private JPanel panel;
+	private JButton squares [][];
+	
 	/**
 	 * Launch the application.
 	 */
@@ -30,6 +34,8 @@ public class MinesweeperGUI {
 	 * Create the application.
 	 */
 	public MinesweeperGUI() {
+		client = new MinesweeperClient("localhost", 9000);
+		client.getField();
 		initialize();
 	}
 
@@ -38,39 +44,28 @@ public class MinesweeperGUI {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 500, 420);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
-	
-	public void open(int x, int y, int number) {
-		// TODO
-	}
+		
+		panel = new JPanel();
+		frame.getContentPane().add(panel, BorderLayout.CENTER);
 
-	public void mark(int x, int y, int mark) {
-		// TODO
+		 panel.setSize(400,400);
+	     panel.setLayout(new GridLayout(10,10));
+	     squares = new JButton[10][10];
+	     buildButtons();
+	     
 	}
 	
-	public void won(int x, int y, List mines) {
-		
-	}
-	
-	public void lost(int x, int y, List mines) {
-		
-	}
-	
-	public void addPlayer(String nick) {
-		
-	}
-	
-	public void removePlayer(String nick) {
-		
-	}
-	
-	public void newGame(int width, int height, int mineCount) {
-		
-	}
-	
-	public void serverError() {
-		
+	private void buildButtons()
+	{
+		  for(int i=0;i<10;i++){
+	          for(int j=0;j<10;j++){
+	               squares[i][j] = new JButton();
+	               squares[i][j].setSize(400,400);
+	               panel.add(squares[i][j]);
+
+	          }
+	     }
 	}
 }
