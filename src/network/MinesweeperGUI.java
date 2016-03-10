@@ -23,21 +23,21 @@ public class MinesweeperGUI {
 	private class CellButton extends JButton {
 		private static final long serialVersionUID = -1722545135914719909L;
 		
-		private int x, y, mark;
+		private int indexX, indexY, mark;
 		
 		private CellButton(int x, int y) {
 			super();
-			this.x = x;
-			this.y = y;
+			this.indexX = x;
+			this.indexY = y;
 			mark = -1;
 		}
 
-		public int getX() {
-			return x;
+		public int getIndexX() {
+			return indexX;
 		}
 
-		public int getY() {
-			return y;
+		public int getIndexY() {
+			return indexY;
 		}
 		
 		public void setMark(int mark) {
@@ -123,14 +123,14 @@ public class MinesweeperGUI {
 				super.windowClosed(e);
 			}
 		});;
-
-		pnlField = new JPanel();
-		frmMinesweeper.getContentPane().add(pnlField, BorderLayout.CENTER);
 		
 		JList<String> lstPlayers = new JList<>();
 		lstPlayers.setModel((lstMdlPlayers = new DefaultListModel<>()));
 		frmMinesweeper.getContentPane().add(lstPlayers, BorderLayout.EAST);
-		
+
+		pnlField = new JPanel();
+		frmMinesweeper.getContentPane().add(pnlField, BorderLayout.CENTER);
+
 		pnlNewGame = new JPanel();
 		frmMinesweeper.getContentPane().add(pnlNewGame, BorderLayout.SOUTH);
 		
@@ -238,20 +238,22 @@ public class MinesweeperGUI {
 	}
 
 	public void setField(int width, int height, int mineCount) {
+		frmMinesweeper.getContentPane().remove(pnlField);
+		pnlField = new JPanel();
+		frmMinesweeper.getContentPane().add(pnlField, BorderLayout.CENTER);
 		pnlField.setLayout(new GridLayout(width, height));
-		pnlField.setSize(width * BUTTON_SIZE, height * BUTTON_SIZE);
 		field = new CellButton[width][height];
 		
 		// build buttons
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				field[x][y] = new CellButton(x, y);
-				field[x][y].setSize(BUTTON_SIZE, BUTTON_SIZE);
+//				field[x][y].setSize(BUTTON_SIZE, BUTTON_SIZE);
 				field[x][y].addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						CellButton source = (CellButton) e.getSource();
-						client.open(source.getX(), source.getY());
+						client.open(source.getIndexX(), source.getIndexY());
 					}
 				});
 				field[x][y].addMouseListener(new MouseListener() {
@@ -273,9 +275,9 @@ public class MinesweeperGUI {
 					
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						if (e.isPopupTrigger()) {
+						if (SwingUtilities.isRightMouseButton(e)) {
 							CellButton source = (CellButton) e.getSource();
-							client.mark(source.getX(), source.getY(), source.getNextMark());
+							client.mark(source.getIndexX(), source.getIndexY(), source.getNextMark());
 						}
 					}
 				});

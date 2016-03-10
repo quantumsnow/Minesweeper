@@ -19,7 +19,7 @@ public class MinesweeperClient extends Client {
 					((MinesweeperClient) client).gui.addPlayer(player);
 				}
 			}
-		}), FIELD = new Command(new String[] { "F: (" + ")" }, false, new Action() {
+		}), FIELD = new Command(new String[] { "F: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				String[] rows = args[0].split("[|], [|]"), fields;
@@ -41,28 +41,28 @@ public class MinesweeperClient extends Client {
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.removePlayer(args[0]);
 			}
-		}), NEW_GAME = new Command(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
+		}), NEW_GAME = new Command(new String[] { "N: ", ", ", ", " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.setField(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						Integer.parseInt(args[2]));
 			}
-		}), OPEN = new Command(new String[] { "O: (", ", ", ", ", ")" }, false, new Action() {
+		}), OPEN = new Command(new String[] { "O: ", ", ", ", " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 			}
-		}), LOST = new Command(new String[] { "L: (", ")" }, false, new Action() {
+		}), LOST = new Command(new String[] { "L: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.lost(parseCellList(args[0]));
 			}
-		}), WON = new Command(new String[] { "W: (", ")" }, false, new Action() {
+		}), WON = new Command(new String[] { "W: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.won(parseCellList(args[0]));
 			}
-		}), MARK = new Command(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
+		}), MARK = new Command(new String[] { "M: ", ", ", ", " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.mark(Integer.parseInt(args[0]), Integer.parseInt(args[1]),

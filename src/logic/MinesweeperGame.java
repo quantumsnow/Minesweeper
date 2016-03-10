@@ -7,9 +7,9 @@ public class MinesweeperGame {
 	public interface UserInterface {
 		public void mark(int x, int y, int mark);
 
-		public void open(int x, int y);
+		public void open(int x, int y, int number);
 
-		public void lost(int x, int y, List mineCoordinates);
+		public void lost(List mineCoordinates);
 
 		public void won(List mineCoordinates);
 	}
@@ -168,8 +168,8 @@ public class MinesweeperGame {
 			for (int i = 0; i <= mineCount; i++) {
 				// Find cell suitable for mine
 				do {
-					x = (int) Math.round(Math.random() * width);
-					y = (int) Math.round(Math.random() * height);
+					x = (int) Math.round(Math.random() * (width - 1));
+					y = (int) Math.round(Math.random() * (height - 1));
 				} while (field[x][y] != null); // field must not have a mine
 												// already
 
@@ -261,9 +261,9 @@ public class MinesweeperGame {
 		try {
 			Cell cell = field[coordinates.getX()][coordinates.getY()];
 			cell.open();
+			ui.open(coordinates.getX(), coordinates.getY(), cell.getNumber());
 
 			if (!cell.isMined()) {
-				ui.open(coordinates.getX(), coordinates.getY());
 				if (cell.getNumber() == 0) {
 					Queue neighbors = getNeighbors(coordinates);
 					while (!neighbors.isEmpty()) {
@@ -273,7 +273,7 @@ public class MinesweeperGame {
 				}
 			} else {
 				ended = true;
-				ui.lost(coordinates.getX(), coordinates.getY(), mines);
+				ui.lost(mines);
 			}
 		} catch (IllegalStateException e) {
 		}
