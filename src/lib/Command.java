@@ -75,26 +75,26 @@ public abstract class Command {
 		this.action = action;
 	}
 
-	protected static Command[] getSet(Class<? extends Command> type) {
-		Field[] fields = type.getFields();
-		List commandList = new List();
-		int setSize = 0;
-		for (Field field : fields) {
-			try {
-				field.get(null);
-				setSize++;
-			} catch (Exception e) {
-			}
-		}
-
-		Command[] commands = new Command[setSize];
-		commandList.toFirst();
-		for (int i = 0; i < setSize; i++) {
-			commands[i] = (Command) commandList.getObject();
-		}
-
-		return commands;
-	}
+//	protected static Command[] getSet(Class<? extends Command> type) {
+//		Field[] fields = type.getFields();
+//		List commandList = new List();
+//		int setSize = 0;
+//		for (Field field : fields) {
+//			try {
+//				field.get(null);
+//				setSize++;
+//			} catch (Exception e) {
+//			}
+//		}
+//
+//		Command[] commands = new Command[setSize];
+//		commandList.toFirst();
+//		for (int i = 0; i < setSize; i++) {
+//			commands[i] = (Command) commandList.getObject();
+//		}
+//
+//		return commands;
+//	}
 
 	public String[] getBlocks() {
 		return blocks;

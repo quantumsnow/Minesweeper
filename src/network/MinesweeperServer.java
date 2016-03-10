@@ -8,8 +8,13 @@ import logic.MinesweeperGame.Coordinates;
 import logic.MinesweeperGame.Difficulty;
 
 public class MinesweeperServer extends Server implements MinesweeperGame.UserInterface {
+	// for testing
+	public static void main(String[] args) {
+		new MinesweeperServer(9000);
+	}
+	
 	public static class Command extends lib.Command.Server {
-		public static final lib.Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
+		public static final Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
@@ -74,7 +79,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 				MinesweeperServer msServer = (MinesweeperServer) server;
 				Difficulty difficulty = MinesweeperGame.Difficulty.fromByte(Byte.parseByte(args[0]));
 				msServer.game = new MinesweeperGame(difficulty, msServer);
-				msServer.notifyPlayersNewGame(difficulty.getWidth(), difficulty.getHeight(), difficulty.getMineCount());
+				msServer.notifyPlayersOfNewGame(difficulty.getWidth(), difficulty.getHeight(), difficulty.getMineCount());
 			}
 		}), NEW_GAME_CUSTOM = new Command(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
@@ -83,7 +88,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 				int width = Integer.parseInt(args[0]), height = Integer.parseInt(args[1]),
 						mineCount = Integer.parseInt(args[2]);
 				msServer.game = new MinesweeperGame(width, height, mineCount, msServer);
-				msServer.notifyPlayersNewGame(width, height, mineCount);
+				msServer.notifyPlayersOfNewGame(width, height, mineCount);
 			}
 		}), OPEN = new Command(new String[] { "O: (", ", ", ")" }, false, new Action() {
 			@Override
@@ -99,7 +104,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 			}
 		});
 
-		public static final lib.Command[] SET = getSet(Command.class);
+		public static final Command[] SET = { OPEN, MARK, REGISTER, DEREGISTER, NEW_GAME_PRESET, NEW_GAME_CUSTOM };
 
 		private Command(String[] blocks, boolean hasTrailingArg, lib.Command.Server.Action action) {
 			super(blocks, hasTrailingArg, action);
@@ -152,9 +157,9 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 
 	@Override
 	public void processMessage(String ip, int port, String message) {
-		for (lib.Command command : Command.SET) {
+		for (Command command : Command.SET) {
 			try {
-				((Command) command).run(this, ip, port, message);
+				command.run(this, ip, port, message);
 				return;
 			} catch (IllegalArgumentException e) {
 			}
@@ -214,7 +219,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 		}
 	}
 
-	private void notifyPlayersNewGame(int width, int height, int mineCount) {
+	private void notifyPlayersOfNewGame(int width, int height, int mineCount) {
 		sendToAll(MinesweeperClient.Command.NEW_GAME.generateCommand(new Integer[] { width, height, mineCount }));
 	}
 }

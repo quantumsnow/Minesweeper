@@ -6,9 +6,9 @@ import lib.Queue;
 public class MinesweeperGame {
 	public interface UserInterface {
 		public void mark(int x, int y, int mark);
-		
+
 		public void open(int x, int y);
-		
+
 		public void lost(int x, int y, List mineCoordinates);
 
 		public void won(List mineCoordinates);
@@ -18,7 +18,7 @@ public class MinesweeperGame {
 		EASY(10, 10, 30), MEDIUM(20, 20, 150), HARD(50, 50, 1500);
 
 		private int width, height, mineCount;
-		
+
 		public static Difficulty fromByte(byte preset) {
 			switch (preset) {
 			case 0:
@@ -115,12 +115,14 @@ public class MinesweeperGame {
 		public int getY() {
 			return y;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "(" + x + ", " + y + ")";
 		}
 	}
+
+	private static final String GAME_ENDED = "The game has ended";
 
 	private int width, height, mineCount;
 	private Cell[][] field;
@@ -232,20 +234,23 @@ public class MinesweeperGame {
 	public Cell[][] getField() {
 		return field;
 	}
-	
+
 	public void open(int x, int y) {
-		open(new Coordinates(x, y));
-		
-		// check if won
-		for (Cell[] column : field) {
-			for (Cell cell : column) {
-				if (!cell.isMined() && !cell.isOpen()) {
-					return;
+		if (!ended) {
+			open(new Coordinates(x, y));
+			// check if won
+			for (Cell[] column : field) {
+				for (Cell cell : column) {
+					if (!cell.isMined() && !cell.isOpen()) {
+						return;
+					}
 				}
 			}
+			ended = true;
+			ui.won(mines);
+		} else {
+			throw new IllegalStateException(GAME_ENDED);
 		}
-		ended = true;
-		ui.won(mines);
 	}
 
 	private void open(Coordinates coordinates) {
@@ -283,11 +288,15 @@ public class MinesweeperGame {
 	// }
 
 	public void mark(int x, int y, int mark) {
-		try {
-			field[x][y].mark(mark);
-			ui.mark(x, y, mark);
-		} catch (NullPointerException e) {
-			throw new IllegalStateException("Can not mark before a cell is opened.");
+		if (!ended) {
+			try {
+				field[x][y].mark(mark);
+				ui.mark(x, y, mark);
+			} catch (NullPointerException e) {
+				throw new IllegalStateException("Can not mark before a cell is opened.");
+			}
+		} else {
+			throw new IllegalStateException(GAME_ENDED);
 		}
 	}
 }

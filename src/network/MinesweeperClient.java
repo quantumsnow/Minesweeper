@@ -6,11 +6,7 @@ import logic.MinesweeperGame.Coordinates;
 
 public class MinesweeperClient extends Client {
 	public static class Command extends lib.Command.Client {
-		public static final lib.Command OK = new Command(new String[] { "OK" }, false, new Action() {
-			@Override
-			protected void run(lib.Client client, String[] args) {
-			}
-		}), REGISTER = new Command(new String[] { "R: " }, true, new Action() {
+		public static final Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.addPlayer(args[0]);
@@ -40,7 +36,7 @@ public class MinesweeperClient extends Client {
 					}
 				}
 			}
-		}), DEREGISTER = new Command(new String[] { "D: " }, false, new Action() {
+		}), DEREGISTER = new Command(new String[] { "D: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.removePlayer(args[0]);
@@ -48,7 +44,7 @@ public class MinesweeperClient extends Client {
 		}), NEW_GAME = new Command(new String[] { "N: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.newGame(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+				((MinesweeperClient) client).gui.setField(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						Integer.parseInt(args[2]));
 			}
 		}), OPEN = new Command(new String[] { "O: (", ", ", ", ", ")" }, false, new Action() {
@@ -56,17 +52,15 @@ public class MinesweeperClient extends Client {
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 			}
-		}), LOST = new Command(new String[] { "L: (", ", ", "), (", ")" }, false, new Action() {
+		}), LOST = new Command(new String[] { "L: (", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.lost(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-						parseCellList(args[2]));
+				((MinesweeperClient) client).gui.lost(parseCellList(args[0]));
 			}
-		}), WON = new Command(new String[] { "W: (", ", ", "), (", ")" }, false, new Action() {
+		}), WON = new Command(new String[] { "W: (", ")" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.won(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-						parseCellList(args[2]));
+				((MinesweeperClient) client).gui.won(parseCellList(args[0]));
 			}
 		}), MARK = new Command(new String[] { "M: (", ", ", ", ", ")" }, false, new Action() {
 			@Override
@@ -81,14 +75,14 @@ public class MinesweeperClient extends Client {
 			}
 		});
 
-		public static final lib.Command[] SET = getSet(Command.class);
+		public static final Command[] SET = { OPEN, MARK, REGISTER, DEREGISTER, WON, LOST, NEW_GAME, FIELD, PLAYERS, ERROR };
 
 		private Command(String[] blocks, boolean hasTrailingArg, lib.Command.Client.Action action) {
 			super(blocks, hasTrailingArg, action);
 		}
 
 		private static List parseCellList(String list) {
-			String[] stringCells = list.split("\\), \\(|\\(|\\)");
+			String[] stringCells = list.split("\\], \\[|\\[|\\]");
 			List cells = new List();
 			String[] cellCoordinates;
 			for (String cell : stringCells) {
@@ -102,16 +96,16 @@ public class MinesweeperClient extends Client {
 
 	private MinesweeperGUI gui;
 
-	public MinesweeperClient(String ip, int port, MinesweeperGUI gui) {
+	public MinesweeperClient(String ip, int port, String nick, MinesweeperGUI gui) {
 		super(ip, port);
 		this.gui = gui;
 	}
 
 	@Override
 	public void processMessage(String message) {
-		for (lib.Command command : Command.SET) {
+		for (Command command : Command.SET) {
 			try {
-				((Command) command).run(this, message);
+				command.run(this, message);
 				return;
 			} catch (IllegalArgumentException e) {
 			}
@@ -122,7 +116,11 @@ public class MinesweeperClient extends Client {
 		send(MinesweeperServer.Command.OPEN.generateCommand(new String[] { "" + x, "" + y }));
 	}
 
-	public void mark(int x, int y) {
-		send(MinesweeperServer.Command.MARK.generateCommand(new String[] { "" + x, "" + y }));
+	public void mark(int x, int y, int mark) {
+		send(MinesweeperServer.Command.MARK.generateCommand(new String[] { "" + x, "" + y, "" + mark }));
+	}
+	
+	public void newGame(int width, int height, int mineCount) {
+		send(MinesweeperServer.Command.NEW_GAME_CUSTOM.generateCommand(new Integer[] { width, height, mineCount }));
 	}
 }
