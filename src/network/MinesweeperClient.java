@@ -57,10 +57,10 @@ public class MinesweeperClient extends Client {
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.lost(parseCellList(args[0]));
 			}
-		}), WON = new Command(new String[] { "W: " }, true, new Action() {
+		}), WON = new Command(new String[] { "W" }, false, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.won(parseCellList(args[0]));
+				((MinesweeperClient) client).gui.won();
 			}
 		}), MARK = new Command(new String[] { "M: ", ", ", ", " }, true, new Action() {
 			@Override
@@ -82,7 +82,7 @@ public class MinesweeperClient extends Client {
 		}
 
 		private static List parseCellList(String list) {
-			String[] stringCells = list.split("\\], \\[|\\[|\\]");
+			String[] stringCells = list.substring(1, list.length() - 1).split("\\], \\[");
 			List cells = new List();
 			String[] cellCoordinates;
 			for (String cell : stringCells) {
@@ -99,6 +99,7 @@ public class MinesweeperClient extends Client {
 	public MinesweeperClient(String ip, int port, String nick, MinesweeperGUI gui) {
 		super(ip, port);
 		this.gui = gui;
+		send(MinesweeperServer.Command.REGISTER.generateCommand(new String[] { nick }));
 	}
 
 	@Override

@@ -8,11 +8,6 @@ import logic.MinesweeperGame.Coordinates;
 import logic.MinesweeperGame.Difficulty;
 
 public class MinesweeperServer extends Server implements MinesweeperGame.UserInterface {
-	// for testing
-	public static void main(String[] args) {
-		new MinesweeperServer(9000);
-	}
-	
 	public static class Command extends lib.Command.Server {
 		public static final Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
@@ -28,6 +23,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 					if (!msServer.players.isEmpty()) {
 						msServer.players.toFirst();
 						players = ((Player) msServer.players.getObject()).getNick();
+						msServer.players.next();
 						while (msServer.players.hasAccess()) {
 							players += ", " + ((Player) msServer.players.getObject()).getNick();
 							msServer.players.next();
@@ -36,22 +32,25 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 					msServer.send(ip, port,
 							MinesweeperClient.Command.PLAYERS.generateCommand(new String[] { players }));
 					
-					// send field
-					Cell[][] field = msServer.game.getField();
-					String fieldString = "([" + getStateInt(field[0][0]);
-					for (int i = 1; i < field[0].length; i++) {
-						fieldString += ", " + getStateInt(field[i][0]);
-					}
-					fieldString += "]";
-					for (int i = 1; i < field[0].length; i++) { // row
-						fieldString += ", [" + getStateInt(field[0][i]);
-						for (int j = 1; j < field.length; j++) { // column
-							fieldString += ", " + getStateInt(field[j][i]);
+					if (msServer.game != null) {
+						// send field
+						Cell[][] field = msServer.game.getField();
+						String fieldString = "([" + getStateInt(field[0][0]);
+						for (int i = 1; i < field[0].length; i++) {
+							fieldString += ", " + getStateInt(field[i][0]);
 						}
 						fieldString += "]";
+						for (int i = 1; i < field[0].length; i++) { // row
+							fieldString += ", [" + getStateInt(field[0][i]);
+							for (int j = 1; j < field.length; j++) { // column
+								fieldString += ", " + getStateInt(field[j][i]);
+							}
+							fieldString += "]";
+						}
+						fieldString += ")";
+						msServer.send(ip, port,
+								MinesweeperClient.Command.FIELD.generateCommand(new String[] { fieldString }));
 					}
-					fieldString += ")";
-					msServer.send(ip, port, MinesweeperClient.Command.FIELD.generateCommand(new String[] { fieldString }));
 				} catch (IllegalStateException e) {
 					msServer.send(ip, port, MinesweeperClient.Command.ERROR.generateCommand(null));
 				}
@@ -134,7 +133,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 		}
 
 		void register(String nick) {
-			if (nick == null) {
+			if (this.nick == null) {
 				this.nick = nick;
 			} else {
 				throw new IllegalStateException("Already registered");
@@ -190,8 +189,8 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 
 	@Override
 	public void won(List coordinates) {
-		sendToAll(MinesweeperClient.Command.LOST
-				.generateCommand(new String[] { buildCoordinateList(coordinates) }));
+		sendToAll(MinesweeperClient.Command.WON
+				.generateCommand(null));
 	}
 
 	private static String buildCoordinateList(List coordinates) {
@@ -201,6 +200,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 			coordinates.next();
 			while (coordinates.hasAccess()) {
 				strList += ", " + ((Coordinates) coordinates.getObject()).toString();
+				coordinates.next();
 			}
 			return strList;
 		} else {
@@ -216,6 +216,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 			if (currentPlayer.getIp().equals(ip) && currentPlayer.getPort() == port) {
 				return;
 			}
+			players.next();
 		}
 	}
 

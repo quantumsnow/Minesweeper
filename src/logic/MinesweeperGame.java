@@ -58,12 +58,12 @@ public class MinesweeperGame {
 		private int mark;
 		private byte number;
 
-		private Cell(boolean mined) {
-			this.mined = mined;
-		}
-
 		boolean isMined() {
 			return mined;
+		}
+
+		void mine() {
+			this.mined = true;
 		}
 
 		public boolean isOpen() {
@@ -75,11 +75,7 @@ public class MinesweeperGame {
 		}
 
 		private void increaseNumber() {
-			if (!mined) {
-				number++;
-			} else {
-				throw new UnsupportedOperationException("Cell is mined");
-			}
+			number++;
 		}
 
 		public int getMark() {
@@ -118,16 +114,16 @@ public class MinesweeperGame {
 
 		@Override
 		public String toString() {
-			return "(" + x + ", " + y + ")";
+			return "[" + x + ", " + y + "]";
 		}
 	}
 
 	private static final String GAME_ENDED = "The game has ended";
 
-	private int width, height, mineCount;
+	private int mineCount;
 	private Cell[][] field;
-	private List mines;
-	private boolean ended;
+	private List mines, openingPending;
+	private boolean started, ended;
 
 	private UserInterface ui;
 
@@ -137,10 +133,16 @@ public class MinesweeperGame {
 
 	public MinesweeperGame(int width, int height, int mineCount, UserInterface ui) {
 		if (mineCount <= width * height - 9) { // Opened cell must be zero
-			this.width = width;
-			this.height = height;
 			this.mineCount = mineCount;
 			this.ui = ui;
+
+			field = new Cell[width][height];
+
+			for (Cell[] column : field) {
+				for (int i = 0; i < column.length; i++) {
+					column[i] = new Cell();
+				}
+			}
 		} else {
 			throw new IllegalArgumentException(
 					"mineCount must be small enough to make at least one zero-cell possible");
@@ -148,41 +150,28 @@ public class MinesweeperGame {
 	}
 
 	private void generateField(Coordinates openedCoordinates) {
-		field = new Cell[width][height];
-
-		field[openedCoordinates.getX()][openedCoordinates.getY()] = new Cell(false);
-		{ // Opened cell must be zero
-			Queue neighbors = getNeighbors(openedCoordinates);
-			Coordinates currentNeighbor;
-			while (!neighbors.isEmpty()) {
-				currentNeighbor = (Coordinates) neighbors.front();
-				field[currentNeighbor.getX()][currentNeighbor.getY()] = new Cell(false);
-				neighbors.dequeue();
-			}
-		}
-
-		// fill field
 		mines = new List();
 		{ // generate mines
 			int x, y;
-			for (int i = 0; i <= mineCount; i++) {
+			for (int i = 1; i <= mineCount; i++) {
 				// Find cell suitable for mine
-				do {
-					x = (int) Math.round(Math.random() * (width - 1));
-					y = (int) Math.round(Math.random() * (height - 1));
-				} while (field[x][y] != null); // field must not have a mine
-												// already
+				do { // TODO check if not opened
+					x = (int) Math.round(Math.random() * (field.length - 1));
+					y = (int) Math.round(Math.random() * (field[x].length - 1));
+				} while (field[x][y].isMined()); // field must not have a mine
+													// already
 
 				mines.append(new Coordinates(x, y));
-				field[x][y] = new Cell(true);
+				field[x][y].mine();
 			}
 		}
-
-		// fill empty cells
+		
+		// get non-mines
+		openingPending = new List();
 		for (Cell[] column : field) {
-			for (int i = 0; i < column.length; i++) {
-				if (column[i] == null) {
-					column[i] = new Cell(false);
+			for (Cell cell : column) {
+				if (!cell.isMined()) {
+					openingPending.append(cell);
 				}
 			}
 		}
@@ -195,10 +184,7 @@ public class MinesweeperGame {
 				neighbors = getNeighbors((Coordinates) mines.getObject());
 				while (!neighbors.isEmpty()) {
 					currentNeighbor = (Coordinates) neighbors.front();
-					try {
-						field[currentNeighbor.getX()][currentNeighbor.getY()].increaseNumber();
-					} catch (UnsupportedOperationException e) {
-					}
+					field[currentNeighbor.getX()][currentNeighbor.getY()].increaseNumber();
 					neighbors.dequeue();
 				}
 				mines.next();
@@ -238,23 +224,17 @@ public class MinesweeperGame {
 	public void open(int x, int y) {
 		if (!ended) {
 			open(new Coordinates(x, y));
-			// check if won
-			for (Cell[] column : field) {
-				for (Cell cell : column) {
-					if (!cell.isMined() && !cell.isOpen()) {
-						return;
-					}
-				}
+			if (openingPending.isEmpty()) {
+				ended = true;
+				ui.won(mines);
 			}
-			ended = true;
-			ui.won(mines);
 		} else {
 			throw new IllegalStateException(GAME_ENDED);
 		}
 	}
 
 	private void open(Coordinates coordinates) {
-		if (field == null) {
+		if (!started) {
 			generateField(coordinates);
 		}
 
@@ -264,6 +244,15 @@ public class MinesweeperGame {
 			ui.open(coordinates.getX(), coordinates.getY(), cell.getNumber());
 
 			if (!cell.isMined()) {
+				openingPending.toFirst();
+				while (openingPending.hasAccess()) {
+					if (((Cell) openingPending.getObject()) == cell) {
+						openingPending.remove();
+						break;
+					}
+					openingPending.next();
+				}
+				
 				if (cell.getNumber() == 0) {
 					Queue neighbors = getNeighbors(coordinates);
 					while (!neighbors.isEmpty()) {
@@ -289,12 +278,8 @@ public class MinesweeperGame {
 
 	public void mark(int x, int y, int mark) {
 		if (!ended) {
-			try {
-				field[x][y].mark(mark);
-				ui.mark(x, y, mark);
-			} catch (NullPointerException e) {
-				throw new IllegalStateException("Can not mark before a cell is opened.");
-			}
+			field[x][y].mark(mark);
+			ui.mark(x, y, mark);
 		} else {
 			throw new IllegalStateException(GAME_ENDED);
 		}
