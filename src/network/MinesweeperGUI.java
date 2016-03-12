@@ -316,6 +316,8 @@ public class MinesweeperGUI {
 		field[x][y].setEnabled(false);
 		field[x][y].removeMouseListener(markListener);
 		field[x][y].setText(number == 0 ? "" : "" + number);
+//		field[x][y].revalidate();
+//		pnlField.revalidate();
 	}
 
 	public void setField(int width, int height, int mineCount) {
@@ -334,6 +336,7 @@ public class MinesweeperGUI {
 				pnlField.add(field[x][y]);
 			}
 		}
+		pnlField.revalidate();
 	}
 
 	public void removePlayer(String nickname) {

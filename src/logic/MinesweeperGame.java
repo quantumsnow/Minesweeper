@@ -93,6 +93,15 @@ public class MinesweeperGame {
 		private void mark(int mark) {
 			this.mark = mark;
 		}
+		
+		@Override
+		public String toString() {
+			if (mined) {
+				return "x";
+			} else {
+				return "" + number;
+			}
+		}
 	}
 
 	public static class Coordinates {
@@ -155,17 +164,24 @@ public class MinesweeperGame {
 			int x, y;
 			for (int i = 1; i <= mineCount; i++) {
 				// Find cell suitable for mine
-				do { // TODO check if not opened
+				do {
 					x = (int) Math.round(Math.random() * (field.length - 1));
 					y = (int) Math.round(Math.random() * (field[x].length - 1));
-				} while (field[x][y].isMined()); // field must not have a mine
-													// already
+				} while (field[x][y].isMined()
+						|| (x >= openedCoordinates.getX() - 1 && x <= openedCoordinates.getX() + 1
+								&& y >= openedCoordinates.getY() - 1 && y <= openedCoordinates.getY() + 1)); // field
+																												// must
+																												// not
+																												// have
+																												// a
+																												// mine
+				// already
 
 				mines.append(new Coordinates(x, y));
 				field[x][y].mine();
 			}
 		}
-		
+
 		// get non-mines
 		openingPending = new List();
 		for (Cell[] column : field) {
@@ -190,28 +206,30 @@ public class MinesweeperGame {
 				mines.next();
 			}
 		}
+		
+		System.out.println(field.toString());
 	}
 
 	private Queue getNeighbors(Coordinates coordinates) {
 		int x = coordinates.getX(), y = coordinates.getY();
 		Queue neighbors = new Queue();
-		int xLowerOffset = x > 0 ? -1 : 0, xHigherOffset = x < field.length - 1 ? 1 : 0;
+		int xMinOffset = x > 0 ? -1 : 0, xMaxOffset = x < field.length - 1 ? 1 : 0;
 		boolean yAddLower = y > 0, yAddHigher = y < field[x].length - 1;
 
 		if (yAddLower) {
-			for (int i = xLowerOffset; i <= xHigherOffset; i++) {
-				neighbors.enqueue(new Coordinates(x + i, y - 1));
+			for (int xOffset = xMinOffset; xOffset <= xMaxOffset; xOffset++) {
+				neighbors.enqueue(new Coordinates(x + xOffset, y - 1));
 			}
 		}
-		if (xLowerOffset != 0) {
-			neighbors.enqueue(new Coordinates(x + xLowerOffset, y));
+		if (xMinOffset != 0) {
+			neighbors.enqueue(new Coordinates(x + xMinOffset, y));
 		}
-		if (xHigherOffset != 0) {
-			neighbors.enqueue(new Coordinates(x + xHigherOffset, y));
+		if (xMaxOffset != 0) {
+			neighbors.enqueue(new Coordinates(x + xMaxOffset, y));
 		}
 		if (yAddHigher) {
-			for (int i = xLowerOffset; i <= xHigherOffset; i++) {
-				neighbors.enqueue(new Coordinates(x + i, y + 1));
+			for (int xOffset = xMinOffset; xOffset <= xMaxOffset; xOffset++) {
+				neighbors.enqueue(new Coordinates(x + xOffset, y + 1));
 			}
 		}
 		return neighbors;
@@ -236,6 +254,7 @@ public class MinesweeperGame {
 	private void open(Coordinates coordinates) {
 		if (!started) {
 			generateField(coordinates);
+			started = true;
 		}
 
 		try {
@@ -249,10 +268,11 @@ public class MinesweeperGame {
 					if (((Cell) openingPending.getObject()) == cell) {
 						openingPending.remove();
 						break;
+					} else {
+						openingPending.next();
 					}
-					openingPending.next();
 				}
-				
+
 				if (cell.getNumber() == 0) {
 					Queue neighbors = getNeighbors(coordinates);
 					while (!neighbors.isEmpty()) {
