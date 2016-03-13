@@ -1,8 +1,9 @@
-package network;
+package interaction;
 
 import lib.Client;
 import lib.List;
 import logic.MinesweeperGame.Coordinates;
+import logic.MinesweeperGame.Difficulty;
 
 public class MinesweeperClient extends Client {
 	public static class Command extends lib.Command.Client {
@@ -134,5 +135,9 @@ public class MinesweeperClient extends Client {
 	
 	public void newGame(int width, int height, int mineCount) {
 		send(MinesweeperServer.Command.NEW_GAME_CUSTOM.generateCommand(new Integer[] { width, height, mineCount }));
+	}
+	
+	public void newGame(Difficulty difficulty) {
+		send(MinesweeperServer.Command.NEW_GAME_PRESET.generateCommand(new Integer[] { difficulty.getNumber() }));
 	}
 }

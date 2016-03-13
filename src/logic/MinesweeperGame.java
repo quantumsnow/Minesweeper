@@ -15,24 +15,22 @@ public class MinesweeperGame {
 	}
 
 	public enum Difficulty {
-		EASY(10, 10, 30), MEDIUM(20, 20, 150), HARD(50, 50, 1500);
+		EASY(0, 10, 10, 10), MEDIUM(1, 15, 15, 40), HARD(2, 20, 20, 100);
 
+		private int number;
 		private int width, height, mineCount;
 
-		public static Difficulty fromByte(byte preset) {
-			switch (preset) {
-			case 0:
-				return EASY;
-			case 1:
-				return MEDIUM;
-			case 2:
-				return HARD;
-			default:
-				throw new IllegalArgumentException("Invalid difficulty constant: " + preset);
+		public static Difficulty fromNumber(int number) {
+			for (Difficulty difficulty : values()) {
+				if (difficulty.number == number) {
+					return difficulty;
+				}
 			}
+			throw new IllegalArgumentException("No preset with number: " + number);
 		}
 
-		private Difficulty(int width, int height, int mineCount) {
+		private Difficulty(int number, int width, int height, int mineCount) {
+			this.number = number;
 			this.width = width;
 			this.height = height;
 			this.mineCount = mineCount;
@@ -48,6 +46,10 @@ public class MinesweeperGame {
 
 		public int getMineCount() {
 			return mineCount;
+		}
+		
+		public int getNumber() {
+			return number;
 		}
 	}
 	

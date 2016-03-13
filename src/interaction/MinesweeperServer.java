@@ -1,4 +1,4 @@
-package network;
+package interaction;
 
 import lib.List;
 import lib.Server;
@@ -102,7 +102,7 @@ public class MinesweeperServer extends Server implements MinesweeperGame.UserInt
 			protected void run(lib.Server server, String ip, int port, String[] args) {
 				MinesweeperServer msServer = (MinesweeperServer) server;
 				if (msServer.isRegistered(ip, port)) {
-					Difficulty difficulty = MinesweeperGame.Difficulty.fromByte(Byte.parseByte(args[0]));
+					Difficulty difficulty = MinesweeperGame.Difficulty.fromNumber(Byte.parseByte(args[0]));
 					msServer.game = new MinesweeperGame(difficulty, msServer);
 					msServer.notifyPlayersOfNewGame(difficulty.getWidth(), difficulty.getHeight(),
 							difficulty.getMineCount());

@@ -1,9 +1,10 @@
-package network;
+package interaction;
 
 import javax.swing.*;
 import lib.List;
 import logic.MinesweeperGame;
 import logic.MinesweeperGame.Coordinates;
+import logic.MinesweeperGame.Difficulty;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,7 +27,157 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 
 public class MinesweeperGUI {
-	public class EndDialog extends JDialog {
+	public class NewGameDialog extends JDialog {
+		private static final long serialVersionUID = -2771354176586180644L;
+		
+		private final JPanel pnlCustom = new JPanel();
+		private JTextField txtWidth;
+		private JTextField txtHeight;
+		private JTextField txtMineCount;
+
+		/**
+		 * Create the dialog.
+		 */
+		public NewGameDialog(MinesweeperClient client) {
+			setTitle("Neues Spiel");
+			getContentPane().setLayout(new BorderLayout());
+			
+			JPanel contentPanel = new JPanel();
+			getContentPane().add(contentPanel, BorderLayout.CENTER);
+			pnlCustom.setBorder(new EmptyBorder(5, 5, 5, 5));
+			
+			JLabel lblSize = new JLabel("Größe");
+			
+			JLabel lblMinecount = new JLabel("Minenanzahl");
+			
+			txtWidth = new JTextField();
+			txtWidth.setColumns(3);
+			
+			JLabel lblTimes = new JLabel("x");
+			
+			txtHeight = new JTextField();
+			txtHeight.setColumns(3);
+			
+			txtMineCount = new JTextField();
+			txtMineCount.setColumns(9);
+			GroupLayout gl_pnlCustom = new GroupLayout(pnlCustom);
+			gl_pnlCustom.setHorizontalGroup(
+				gl_pnlCustom.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_pnlCustom.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(gl_pnlCustom.createParallelGroup(Alignment.LEADING)
+							.addComponent(lblMinecount)
+							.addComponent(lblSize))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(gl_pnlCustom.createParallelGroup(Alignment.LEADING)
+							.addGroup(gl_pnlCustom.createSequentialGroup()
+								.addComponent(txtWidth, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(lblTimes)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(txtHeight, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE))
+							.addComponent(txtMineCount, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)))
+			);
+			gl_pnlCustom.setVerticalGroup(
+				gl_pnlCustom.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_pnlCustom.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(gl_pnlCustom.createParallelGroup(Alignment.BASELINE)
+							.addComponent(lblSize)
+							.addComponent(lblTimes)
+							.addComponent(txtHeight, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(txtWidth, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(gl_pnlCustom.createParallelGroup(Alignment.BASELINE)
+							.addComponent(lblMinecount)
+							.addComponent(txtMineCount, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+			);
+			pnlCustom.setLayout(gl_pnlCustom);
+			
+			JComboBox<String> comboBox = new JComboBox<>();
+			comboBox.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					switch (comboBox.getSelectedIndex()) {
+					case 3:
+						pnlCustom.setVisible(true);
+						pack();
+						break;
+					default:
+						pnlCustom.setVisible(false);
+						pack();
+						break;
+					}
+				}
+			});
+			comboBox.setModel(new DefaultComboBoxModel<>(new String[] {"Einfach", "Mittel", "Schwer", "Manuell"}));
+			comboBox.setSelectedIndex(0);
+			GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
+			gl_contentPanel.setHorizontalGroup(
+				gl_contentPanel.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_contentPanel.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+							.addGroup(Alignment.TRAILING, gl_contentPanel.createSequentialGroup()
+								.addComponent(comboBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+							.addGroup(gl_contentPanel.createSequentialGroup()
+								.addComponent(pnlCustom, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+			);
+			gl_contentPanel.setVerticalGroup(
+				gl_contentPanel.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_contentPanel.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(pnlCustom, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+			);
+			contentPanel.setLayout(gl_contentPanel);
+			
+			{
+				JPanel buttonPane = new JPanel();
+				buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+				getContentPane().add(buttonPane, BorderLayout.SOUTH);
+				{
+					JButton okButton = new JButton("OK");
+					okButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							switch (comboBox.getSelectedIndex()) {
+							case 3:
+								client.newGame(Integer.parseInt(txtWidth.getText()), Integer.parseInt(txtHeight.getText()), Integer.parseInt(txtMineCount.getText()));
+								break;
+							default:
+								client.newGame(Difficulty.fromNumber(comboBox.getSelectedIndex()));
+								break;
+							}
+							dispose();
+						}
+					});
+					okButton.setActionCommand("OK");
+					buttonPane.add(okButton);
+					getRootPane().setDefaultButton(okButton);
+				}
+				{
+					JButton cancelButton = new JButton("Abbrechen");
+					cancelButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							dispose();
+						}
+					});
+					cancelButton.setActionCommand("Cancel");
+					buttonPane.add(cancelButton);
+				}
+			}
+			
+			pack();
+			setLocationRelativeTo(null);
+			
+			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			setVisible(true);
+		}
+	}
+	
+	private class EndDialog extends JDialog {
+		private static final long serialVersionUID = 561800084824090963L;
+		
 		private static final String MESSAGE_WON = "Sie haben gewonnen.", MESSAGE_LOST = "Sie haben verloren.";
 
 		private EndDialog(boolean won) {
@@ -77,24 +228,6 @@ public class MinesweeperGUI {
 			this.indexY = indexY;
 			mark(MinesweeperGame.Cell.MARK_NONE);
 			addMouseListener(markListener);
-			// addComponentListener(new ComponentListener() {
-			// @Override
-			// public void componentShown(ComponentEvent e) {
-			// }
-			//
-			// @Override
-			// public void componentResized(ComponentEvent e) {
-			// resizeIcon(ICON_MINE, getWidth(), getHeight());
-			// }
-			//
-			// @Override
-			// public void componentMoved(ComponentEvent e) {
-			// }
-			//
-			// @Override
-			// public void componentHidden(ComponentEvent e) {
-			// }
-			// });
 		}
 
 		public int getIndexX() {
@@ -117,7 +250,7 @@ public class MinesweeperGUI {
 				setIcon(getMarkIcon(mark));
 				if (mark == MinesweeperGame.Cell.MARK_NONE) {
 					addActionListener(openListener);
-				} else if (getActionListeners().length > 0) {
+				} else {
 					removeActionListener(openListener);
 				}
 			}
@@ -161,13 +294,8 @@ public class MinesweeperGUI {
 	private MinesweeperConnectGUI connectGui;
 	private DefaultListModel<String> lstMdlPlayers;
 	private JPanel pnlNewGame;
-	private JLabel lblWdith;
-	private JTextField txtWidth;
-	private JLabel lblHeight;
-	private JTextField txtHeight;
-	private JLabel lblMines;
-	private JTextField txtMinecount;
 	private JPanel pnlPlayers;
+	private JLabel lblPlayers;
 
 	/**
 	 * Create the application.
@@ -215,7 +343,7 @@ public class MinesweeperGUI {
 	private void initialize(String host, int port, String nick) {
 		frmMinesweeper = new JFrame();
 		frmMinesweeper.setTitle("Minesweeper: " + nick + "@" + host + ":" + port);
-		frmMinesweeper.setBounds(100, 100, 500, 420);
+		frmMinesweeper.setSize(500, 500);
 		frmMinesweeper.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmMinesweeper.addWindowListener(new WindowAdapter() {
 			@Override
@@ -229,15 +357,19 @@ public class MinesweeperGUI {
 		pnlPlayers = new JPanel();
 		frmMinesweeper.getContentPane().add(pnlPlayers, BorderLayout.EAST);
 
+		lblPlayers = new JLabel("Spieler:");
+
 		JList<String> lstPlayers = new JList<>();
 		lstPlayers.setModel((lstMdlPlayers = new DefaultListModel<>()));
-		lstPlayers.setMinimumSize(new Dimension(40, 0));
 		GroupLayout gl_pnlPlayers = new GroupLayout(pnlPlayers);
 		gl_pnlPlayers.setHorizontalGroup(gl_pnlPlayers.createParallelGroup(Alignment.LEADING).addComponent(lstPlayers,
-				GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
-		gl_pnlPlayers.setVerticalGroup(gl_pnlPlayers.createParallelGroup(Alignment.LEADING).addComponent(lstPlayers,
-				GroupLayout.PREFERRED_SIZE, 363, GroupLayout.PREFERRED_SIZE));
+				100, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE).addComponent(lblPlayers,
+						100, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE));
+		gl_pnlPlayers.setVerticalGroup(gl_pnlPlayers.createSequentialGroup().addComponent(lblPlayers,
+				GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(lstPlayers,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE));
 		pnlPlayers.setLayout(gl_pnlPlayers);
+		
 
 		pnlField = new JPanel();
 		frmMinesweeper.getContentPane().add(pnlField, BorderLayout.CENTER);
@@ -245,63 +377,14 @@ public class MinesweeperGUI {
 		pnlNewGame = new JPanel();
 		frmMinesweeper.getContentPane().add(pnlNewGame, BorderLayout.SOUTH);
 
-		lblWdith = new JLabel("Width");
-
-		txtWidth = new JTextField();
-		txtWidth.setText("10");
-		txtWidth.setColumns(10);
-
-		lblHeight = new JLabel("Height");
-
-		txtHeight = new JTextField();
-		txtHeight.setText("10");
-		txtHeight.setColumns(10);
-
-		lblMines = new JLabel("Mines");
-
-		txtMinecount = new JTextField();
-		txtMinecount.setText("30");
-		txtMinecount.setColumns(10);
-
-		JButton btnNewGame = new JButton("New game");
+		JButton btnNewGame = new JButton("Neues Spiel");
 		btnNewGame.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				client.newGame(Integer.parseInt(txtWidth.getText()), Integer.parseInt(txtHeight.getText()),
-						Integer.parseInt(txtMinecount.getText()));
+				new NewGameDialog(client);
 			}
 		});
-		GroupLayout gl_pnlNewGame = new GroupLayout(pnlNewGame);
-		gl_pnlNewGame
-				.setHorizontalGroup(
-						gl_pnlNewGame
-								.createParallelGroup(
-										Alignment.LEADING)
-								.addGroup(
-										gl_pnlNewGame.createSequentialGroup().addContainerGap().addComponent(lblWdith)
-												.addPreferredGap(ComponentPlacement.RELATED)
-												.addComponent(txtWidth, GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
-												.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblHeight)
-												.addPreferredGap(ComponentPlacement.RELATED)
-												.addComponent(txtHeight, GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
-												.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblMines)
-												.addPreferredGap(ComponentPlacement.RELATED)
-												.addComponent(txtMinecount, GroupLayout.DEFAULT_SIZE, 80,
-														Short.MAX_VALUE)
-												.addPreferredGap(ComponentPlacement.RELATED).addComponent(btnNewGame)
-												.addGap(2)));
-		gl_pnlNewGame
-				.setVerticalGroup(gl_pnlNewGame.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_pnlNewGame.createSequentialGroup()
-								.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addGroup(gl_pnlNewGame.createParallelGroup(Alignment.BASELINE).addComponent(lblWdith)
-										.addComponent(txtWidth, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-												GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblHeight)
-								.addComponent(txtHeight, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE).addComponent(lblMines)
-								.addComponent(txtMinecount, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE).addComponent(btnNewGame))));
-		pnlNewGame.setLayout(gl_pnlNewGame);
+		pnlNewGame.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		pnlNewGame.add(btnNewGame);
 
 		frmMinesweeper.setLocationRelativeTo(null);
 		frmMinesweeper.setVisible(true);

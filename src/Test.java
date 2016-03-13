@@ -1,5 +1,5 @@
-import network.MinesweeperConnectGUI;
-import network.MinesweeperServer;
+import interaction.MinesweeperConnectGUI;
+import interaction.MinesweeperServer;
 
 public class Test {
 	private static final int PORT = 9000;

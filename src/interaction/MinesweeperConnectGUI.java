@@ -1,4 +1,4 @@
-package network;
+package interaction;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -35,8 +35,6 @@ public class MinesweeperConnectGUI extends JDialog {
 //				e.printStackTrace();
 //			}
 			MinesweeperConnectGUI dialog = new MinesweeperConnectGUI();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -46,6 +44,7 @@ public class MinesweeperConnectGUI extends JDialog {
 	 * Create the dialog.
 	 */
 	public MinesweeperConnectGUI() {
+		setTitle("Verbinden");
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -58,40 +57,42 @@ public class MinesweeperConnectGUI extends JDialog {
 		JLabel lblNickname = new JLabel("Nickname");
 
 		txtServer = new JTextField();
-		txtServer.setText("localhost");
 		txtServer.setColumns(10);
 
 		txtPort = new JTextField();
-		txtPort.setText("9000");
 		txtPort.setColumns(10);
 
 		txtNickname = new JTextField();
-		txtNickname.setText("test");
 		txtNickname.setColumns(10);
 		GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
-		gl_contentPanel.setHorizontalGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+		gl_contentPanel.setHorizontalGroup(
+			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
-						.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(lblServer, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-										Short.MAX_VALUE)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(lblServer, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(lblPort, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(lblNickname, GroupLayout.PREFERRED_SIZE, 55, GroupLayout.PREFERRED_SIZE))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING).addComponent(txtServer)
-								.addComponent(txtPort).addComponent(txtNickname))
-						.addGap(287)));
-		gl_contentPanel.setVerticalGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING).addGroup(gl_contentPanel
-				.createSequentialGroup()
-				.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE).addComponent(lblServer).addComponent(
-						txtServer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE).addComponent(lblPort).addComponent(
-						txtPort, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE).addComponent(lblNickname)
-						.addComponent(txtNickname, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE))
-				.addContainerGap(176, Short.MAX_VALUE)));
+						.addComponent(lblNickname))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+						.addComponent(txtServer, GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
+						.addComponent(txtPort, GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
+						.addComponent(txtNickname, GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)))
+		);
+		gl_contentPanel.setVerticalGroup(
+			gl_contentPanel.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_contentPanel.createSequentialGroup()
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblServer)
+						.addComponent(txtServer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblPort)
+						.addComponent(txtPort, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNickname)
+						.addComponent(txtNickname, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+		);
 		contentPanel.setLayout(gl_contentPanel);
 		{
 			JPanel buttonPane = new JPanel();
@@ -111,7 +112,7 @@ public class MinesweeperConnectGUI extends JDialog {
 				getRootPane().setDefaultButton(okButton);
 			}
 			{
-				JButton cancelButton = new JButton("Cancel");
+				JButton cancelButton = new JButton("Abbrechen");
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						dispose();
@@ -121,5 +122,11 @@ public class MinesweeperConnectGUI extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
+		
+		pack();
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setVisible(true);
+
 	}
 }
