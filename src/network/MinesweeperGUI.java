@@ -6,9 +6,12 @@ import logic.MinesweeperGame;
 import logic.MinesweeperGame.Coordinates;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -54,7 +57,7 @@ public class MinesweeperGUI {
 					getRootPane().setDefaultButton(okButton);
 				}
 			}
-			
+
 			pack();
 			setLocationRelativeTo(null);
 
@@ -62,7 +65,7 @@ public class MinesweeperGUI {
 			setVisible(true);
 		}
 	}
-	
+
 	private class CellButton extends JButton {
 		private static final long serialVersionUID = -1722545135914719909L;
 
@@ -72,7 +75,26 @@ public class MinesweeperGUI {
 			super();
 			this.indexX = indexX;
 			this.indexY = indexY;
-			mark = MinesweeperGame.Cell.MARK_NONE;
+			mark(MinesweeperGame.Cell.MARK_NONE);
+			addMouseListener(markListener);
+			// addComponentListener(new ComponentListener() {
+			// @Override
+			// public void componentShown(ComponentEvent e) {
+			// }
+			//
+			// @Override
+			// public void componentResized(ComponentEvent e) {
+			// resizeIcon(ICON_MINE, getWidth(), getHeight());
+			// }
+			//
+			// @Override
+			// public void componentMoved(ComponentEvent e) {
+			// }
+			//
+			// @Override
+			// public void componentHidden(ComponentEvent e) {
+			// }
+			// });
 		}
 
 		public int getIndexX() {
@@ -83,10 +105,16 @@ public class MinesweeperGUI {
 			return indexY;
 		}
 
-		public void setMark(int mark) {
+		public void open(byte number) {
+			removeMouseListener(markListener);
+			setEnabled(false);
+			setText(number == 0 ? "" : "" + number);
+		}
+
+		public void mark(int mark) {
 			if (mark != this.mark) {
 				this.mark = mark;
-				setText(getMarkString(mark));
+				setIcon(getMarkIcon(mark));
 				if (mark == MinesweeperGame.Cell.MARK_NONE) {
 					addActionListener(openListener);
 				} else if (getActionListeners().length > 0) {
@@ -103,19 +131,25 @@ public class MinesweeperGUI {
 			return nextMark;
 		}
 
-		private String getMarkString(int mark) {
+		private ImageIcon getMarkIcon(int mark) {
 			switch (mark) {
 			case MinesweeperGame.Cell.MARK_NONE:
-				return "";
+				return null;
 			case MinesweeperGame.Cell.MARK_MINE:
-				return "M";
+				return ICON_MARK_FLAG;
 			case MinesweeperGame.Cell.MARK_UNKNOWN:
-				return "?";
+				return ICON_MARK_UNKNOWN;
 			default:
 				throw new IllegalArgumentException("Illegal mark int: " + mark);
 			}
 		}
 	}
+
+	private static final String PATH_ICONS = "icons/";
+	private static final ImageIcon ICON_MINE = new ImageIcon(PATH_ICONS + "icon_mine.png"),
+			ICON_MARK_FLAG = new ImageIcon(PATH_ICONS + "icon_mark_flag.png"),
+			ICON_MARK_UNKNOWN = new ImageIcon(PATH_ICONS + "icon_mark_unknown.png"),
+			ICON_EXPLOSION = new ImageIcon(PATH_ICONS + "icon_explosion.png");
 
 	private JFrame frmMinesweeper;
 	private MinesweeperClient client;
@@ -268,13 +302,13 @@ public class MinesweeperGUI {
 								.addComponent(txtMinecount, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 										GroupLayout.PREFERRED_SIZE).addComponent(btnNewGame))));
 		pnlNewGame.setLayout(gl_pnlNewGame);
-		
+
 		frmMinesweeper.setLocationRelativeTo(null);
 		frmMinesweeper.setVisible(true);
 	}
 
 	public void mark(int x, int y, int mark) {
-		field[x][y].setMark(mark);
+		field[x][y].mark(mark);
 	}
 
 	public void won() {
@@ -284,14 +318,14 @@ public class MinesweeperGUI {
 				button.removeActionListener(openListener);
 				button.removeMouseListener(markListener);
 				if (button.isEnabled()) {
-					button.setMark(MinesweeperGame.Cell.MARK_MINE);
+					button.setIcon(ICON_MINE);
 				}
 			}
 		}
 		new EndDialog(true);
 	}
 
-	public void lost(List mineCoordinates) {
+	public void lost(Coordinates trigger, List mineCoordinates) {
 		// remove listeners
 		for (CellButton[] column : field) {
 			for (CellButton button : column) {
@@ -299,28 +333,33 @@ public class MinesweeperGUI {
 				button.removeMouseListener(markListener);
 			}
 		}
-
+		
+		// mark trigger
+		field[trigger.getX()][trigger.getY()].setText(null);
+		field[trigger.getX()][trigger.getY()].setIcon(ICON_EXPLOSION);
+		field[trigger.getX()][trigger.getY()].setDisabledIcon(ICON_EXPLOSION);
+		field[trigger.getX()][trigger.getY()].setEnabled(false);		
+		
 		// mark mines
 		Coordinates coordinates;
 		mineCoordinates.toFirst();
 		while (mineCoordinates.hasAccess()) {
 			coordinates = ((Coordinates) mineCoordinates.getObject());
-			mark(coordinates.getX(), coordinates.getY(), MinesweeperGame.Cell.MARK_MINE);
+			if (!coordinates.equals(trigger)) {
+				field[coordinates.getX()][coordinates.getY()].setIcon(ICON_MINE);
+			}
 			mineCoordinates.next();
 		}
-		
+
 		new EndDialog(false);
 	}
 
-	public void open(int x, int y, int number) {
-		field[x][y].setEnabled(false);
-		field[x][y].removeMouseListener(markListener);
-		field[x][y].setText(number == 0 ? "" : "" + number);
-//		field[x][y].revalidate();
-//		pnlField.revalidate();
+	public void open(int x, int y, byte number) {
+		field[x][y].open(number);
+		pnlField.repaint();
 	}
 
-	public void setField(int width, int height, int mineCount) {
+	public void newField(int width, int height, int mineCount) {
 		frmMinesweeper.getContentPane().remove(pnlField);
 		pnlField = new JPanel();
 		frmMinesweeper.getContentPane().add(pnlField, BorderLayout.CENTER);
@@ -328,11 +367,9 @@ public class MinesweeperGUI {
 		field = new CellButton[width][height];
 
 		// build buttons
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
+		for (int y = 0; y < width; y++) {
+			for (int x = 0; x < height; x ++) {
 				field[x][y] = new CellButton(x, y);
-				field[x][y].addActionListener(openListener);
-				field[x][y].addMouseListener(markListener);
 				pnlField.add(field[x][y]);
 			}
 		}
@@ -344,7 +381,11 @@ public class MinesweeperGUI {
 	}
 
 	public void addPlayer(String nickname) {
-		lstMdlPlayers.addElement(nickname);
+		int i = 0;
+		while (i < lstMdlPlayers.size() && nickname.compareToIgnoreCase(lstMdlPlayers.getElementAt(i)) >= 0) {
+			i++;
+		}
+		lstMdlPlayers.add(i, nickname);
 	}
 
 	public void serverError() {

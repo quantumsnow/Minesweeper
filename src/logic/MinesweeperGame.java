@@ -50,6 +50,10 @@ public class MinesweeperGame {
 			return mineCount;
 		}
 	}
+	
+	public enum State {
+		RUNNING, WON, LOST;
+	}
 
 	public class Cell {
 		public static final int MARK_NONE = -1, MARK_MINE = -2, MARK_UNKNOWN = -3;
@@ -57,6 +61,10 @@ public class MinesweeperGame {
 		private boolean mined, open;
 		private int mark;
 		private byte number;
+		
+		private Cell() {
+			mark = MARK_NONE;
+		}
 
 		boolean isMined() {
 			return mined;
@@ -125,6 +133,16 @@ public class MinesweeperGame {
 		public String toString() {
 			return "[" + x + ", " + y + "]";
 		}
+		
+		@Override
+		public boolean equals(Object object) {
+			try {
+				Coordinates coordinates = (Coordinates) object;
+				return x == coordinates.x && y == coordinates.y;
+			} catch (ClassCastException e) {
+				return super.equals(object);
+			}
+		}
 	}
 
 	private static final String GAME_ENDED = "The game has ended";
@@ -132,7 +150,9 @@ public class MinesweeperGame {
 	private int mineCount;
 	private Cell[][] field;
 	private List mines, openingPending;
-	private boolean started, ended;
+	private boolean generated;
+	private State state;
+	private Coordinates lossTrigger;
 
 	private UserInterface ui;
 
@@ -152,6 +172,8 @@ public class MinesweeperGame {
 					column[i] = new Cell();
 				}
 			}
+			
+			state = State.RUNNING;
 		} else {
 			throw new IllegalArgumentException(
 					"mineCount must be small enough to make at least one zero-cell possible");
@@ -206,8 +228,6 @@ public class MinesweeperGame {
 				mines.next();
 			}
 		}
-		
-		System.out.println(field.toString());
 	}
 
 	private Queue getNeighbors(Coordinates coordinates) {
@@ -239,11 +259,36 @@ public class MinesweeperGame {
 		return field;
 	}
 
+	public int getMineCount() {
+		return mineCount;
+	}
+	
+	public State getState() {
+		return state;
+	}
+	
+	public Coordinates getLossTrigger() {
+		switch (state) {
+		case LOST:
+			return lossTrigger;
+		default:
+			throw new IllegalStateException("The game is still running");
+		}
+	}
+	
+	public List getMineCoordinates() throws IllegalAccessException {
+		if (state == State.RUNNING) {
+			throw new IllegalAccessException("The game is still running");
+		} else {
+			return mines;
+		}
+	}
+
 	public void open(int x, int y) {
-		if (!ended) {
+		if (state == State.RUNNING) {
 			open(new Coordinates(x, y));
 			if (openingPending.isEmpty()) {
-				ended = true;
+				state = State.WON;
 				ui.won(mines);
 			}
 		} else {
@@ -252,17 +297,18 @@ public class MinesweeperGame {
 	}
 
 	private void open(Coordinates coordinates) {
-		if (!started) {
+		if (!generated) {
 			generateField(coordinates);
-			started = true;
+			generated = true;
 		}
 
 		try {
 			Cell cell = field[coordinates.getX()][coordinates.getY()];
 			cell.open();
-			ui.open(coordinates.getX(), coordinates.getY(), cell.getNumber());
 
 			if (!cell.isMined()) {
+				ui.open(coordinates.getX(), coordinates.getY(), cell.getNumber());
+				
 				openingPending.toFirst();
 				while (openingPending.hasAccess()) {
 					if (((Cell) openingPending.getObject()) == cell) {
@@ -281,7 +327,8 @@ public class MinesweeperGame {
 					}
 				}
 			} else {
-				ended = true;
+				state = State.LOST;
+				lossTrigger = coordinates;
 				ui.lost(mines);
 			}
 		} catch (IllegalStateException e) {
@@ -297,7 +344,7 @@ public class MinesweeperGame {
 	// }
 
 	public void mark(int x, int y, int mark) {
-		if (!ended) {
+		if (state == State.RUNNING) {
 			field[x][y].mark(mark);
 			ui.mark(x, y, mark);
 		} else {

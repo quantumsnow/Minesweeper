@@ -9,7 +9,10 @@ public class MinesweeperClient extends Client {
 		public static final Command REGISTER = new Command(new String[] { "R: " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.addPlayer(args[0]);
+				MinesweeperClient msClient = (MinesweeperClient) client;
+				if (!args[0].equals(msClient.nick)) {
+					msClient.gui.addPlayer(args[0]);
+				}
 			}
 		}), PLAYERS = new Command(new String[] { "P: " }, true, new Action() {
 			@Override
@@ -19,19 +22,22 @@ public class MinesweeperClient extends Client {
 					((MinesweeperClient) client).gui.addPlayer(player);
 				}
 			}
-		}), FIELD = new Command(new String[] { "F: " }, true, new Action() {
+		}), FIELD = new Command(new String[] { "F: ", "; " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				String[] rows = args[0].split("[|], [|]"), fields;
-				int status;
+				MinesweeperClient msClient = (MinesweeperClient) client;
+				
+				String[] rows = args[1].substring(1, args[1].length() - 1).split("\\], \\["), fields = rows[0].split(", ");
+				msClient.gui.newField(fields.length, rows.length, Integer.parseInt(args[0]));
+				byte status;
 				for (int y = 0; y < rows.length; y++) {
 					fields = rows[y].split(", ");
 					for (int x = 0; x < fields.length; x++) {
-						status = Integer.parseInt(fields[x]);
+						status = Byte.parseByte(fields[x]);
 						if (status >= 0) {
-							((MinesweeperClient) client).gui.open(x, y, status);
+							msClient.gui.open(x, y, status);
 						} else {
-							((MinesweeperClient) client).gui.mark(x, y, status);
+							msClient.gui.mark(x, y, status);
 						}
 					}
 				}
@@ -44,18 +50,21 @@ public class MinesweeperClient extends Client {
 		}), NEW_GAME = new Command(new String[] { "N: ", ", ", ", " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.setField(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+				((MinesweeperClient) client).gui.newField(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
 						Integer.parseInt(args[2]));
 			}
 		}), OPEN = new Command(new String[] { "O: ", ", ", ", " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+				((MinesweeperClient) client).gui.open(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Byte.parseByte(args[2]));
 			}
-		}), LOST = new Command(new String[] { "L: " }, true, new Action() {
+		}), LOST = new Command(new String[] { "L: ", "; " }, true, new Action() {
 			@Override
 			protected void run(lib.Client client, String[] args) {
-				((MinesweeperClient) client).gui.lost(parseCellList(args[0]));
+				MinesweeperClient msClient = (MinesweeperClient) client;
+				String[] coordinatesString = args[0].substring(1, args[0].length() -1).split(", ");
+				Coordinates trigger = new Coordinates(Integer.parseInt(coordinatesString[0]), Integer.parseInt(coordinatesString[1]));
+				msClient.gui.lost(trigger, parseCellList(args[1]));
 			}
 		}), WON = new Command(new String[] { "W" }, false, new Action() {
 			@Override
@@ -66,7 +75,7 @@ public class MinesweeperClient extends Client {
 			@Override
 			protected void run(lib.Client client, String[] args) {
 				((MinesweeperClient) client).gui.mark(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-						Integer.parseInt(args[2]));
+						Byte.parseByte(args[2]));
 			}
 		}), ERROR = new Command(new String[] { "ERROR" }, false, new Action() {
 			@Override
@@ -95,9 +104,11 @@ public class MinesweeperClient extends Client {
 	}
 
 	private MinesweeperGUI gui;
+	private String nick;
 
 	public MinesweeperClient(String ip, int port, String nick, MinesweeperGUI gui) {
 		super(ip, port);
+		this.nick = nick;
 		this.gui = gui;
 		send(MinesweeperServer.Command.REGISTER.generateCommand(new String[] { nick }));
 	}
